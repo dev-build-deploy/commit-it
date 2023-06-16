@@ -5,6 +5,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 */
 
 import * as git from "../src/git";
+import * as commitIt from "../src/index";
 
 describe("Get Commit Message from git", () => {
   beforeAll(() => {
@@ -12,7 +13,7 @@ describe("Get Commit Message from git", () => {
   });
 
   test("Hash from Local Repository", () => {
-    const commit = git.getCommitMessage("4b1c9f2e8d113892fb7bfc388606c82ce0572b95", ".");
+    const commit = commitIt.getCommit({ hash: "4b1c9f2e8d113892fb7bfc388606c82ce0572b95" });
     expect(commit).toStrictEqual({
       author: {
         name: "Kevin de Jong <monkaii@hotmail.com>",
@@ -34,7 +35,7 @@ Calling \`getCommitMessage(...)\` will return a standard ICommit object`,
   });
 
   test("Hash from Pack file", () => {
-    const commit = git.getCommitMessage("78e505dc465c3c39a179f6d24970c2f0f0dccad9", ".");
+    const commit = commitIt.getCommit({ hash: "78e505dc465c3c39a179f6d24970c2f0f0dccad9" });
     expect(commit).toStrictEqual({
       author: {
         name: "Kevin de Jong <134343960+Kevin-de-Jong@users.noreply.github.com>",
@@ -52,20 +53,20 @@ Calling \`getCommitMessage(...)\` will return a standard ICommit object`,
   });
 
   test("Invalid hash", () => {
-    expect(() => git.getCommitMessage("d0dbf83579080ee214b50551a2be587b218e4088", ".")).toThrow(
+    expect(() => commitIt.getCommit({ hash: "d0dbf83579080ee214b50551a2be587b218e4088" })).toThrow(
       "Could not find commit message for hash d0dbf83579080ee214b50551a2be587b218e4088"
     );
   });
 
   test("Invalid git folder", () => {
-    expect(() => git.getCommitMessage("4b1c9f2e8d113892fb7bfc388606c82ce0572b95", "does/not/exists")).toThrow(
-      "Invalid git folder specified (does/not/exists/test/environment/objects)"
-    );
+    expect(() =>
+      commitIt.getCommit({ hash: "4b1c9f2e8d113892fb7bfc388606c82ce0572b95", rootPath: "does/not/exists" })
+    ).toThrow("Invalid git folder specified (does/not/exists/test/environment/objects)");
   });
 
   test("Invalid hash and git folder", () => {
-    expect(() => git.getCommitMessage("d0dbf83579080ee214b50551a2be587b218e4088", "does/not/exists")).toThrow(
-      "Invalid git folder specified (does/not/exists/test/environment/objects)"
-    );
+    expect(() =>
+      commitIt.getCommit({ hash: "d0dbf83579080ee214b50551a2be587b218e4088", rootPath: "does/not/exists" })
+    ).toThrow("Invalid git folder specified (does/not/exists/test/environment/objects)");
   });
 });
