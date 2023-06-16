@@ -7,9 +7,10 @@ SPDX-License-Identifier: GPL-3.0-or-later
 import * as fs from "fs";
 import * as path from "path";
 import * as zlib from "zlib";
-import * as ccommit from "./index";
+import * as ccommit from "./commit";
 import assert from "assert";
 
+/** @internal */
 export const gitObjectFolder = ".git/objects";
 
 /**
@@ -91,8 +92,9 @@ function getCommitFromLocalObjects(hash: string, rootPath: string): ccommit.ICom
  * Returns a Commit object for the provided hash
  * @param hash Hash of the commit to read
  * @returns Commit object
+ * @internal
  */
-export function getCommitMessage(hash: string, rootPath: string): ccommit.ICommit {
+export function getCommitFromHash(hash: string, rootPath: string): ccommit.ICommit {
   if (!fs.existsSync(path.join(rootPath, gitObjectFolder)))
     throw new Error(`Invalid git folder specified (${path.join(rootPath, gitObjectFolder)})`);
   const message = getCommitFromLocalObjects(hash, rootPath);
