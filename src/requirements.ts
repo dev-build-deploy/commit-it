@@ -213,4 +213,5 @@ class EC02 implements ICommitRequirement {
   }
 }
 
+/** @internal */
 export const commitRules: ICommitRequirement[] = [new CC01(), new CC04(), new CC05(), new EC01(), new EC02()];
