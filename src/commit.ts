@@ -89,7 +89,7 @@ function parseCommitFooter(footer: string): Record<string, string> | undefined {
     let value = line.substring(match[1].length).trim();
     if (match[1].endsWith(" #")) {
       key = match[1].substring(0, match[1].length - 2);
-      value = `#${value}`
+      value = `#${value}`;
     }
 
     // Check if the value continues on the next line

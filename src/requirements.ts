@@ -5,7 +5,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 SPDX-License-Identifier: CC-BY-3.0
 */
 
-import { IConventionalCommitElement, IRawConventionalCommit } from "./conventional_commit";
+import { IConventionalCommitElement, IConventionalCommitOptions, IRawConventionalCommit } from "./conventional_commit";
 import { ExpressiveMessage } from "@dev-build-deploy/diagnose-it";
 
 /**
@@ -24,7 +24,7 @@ interface ICommitRequirement {
    * @throws RequirementError if the commit message is not a valid Conventional Commit
    * @param commit Raw conventional commit data to validate
    */
-  validate(commit: IRawConventionalCommit): ExpressiveMessage[];
+  validate(commit: IRawConventionalCommit, options?: IConventionalCommitOptions): ExpressiveMessage[];
 }
 
 function highlightString(str: string, substring: string | string[]) {
@@ -68,7 +68,9 @@ class CC01 implements ICommitRequirement {
   id = "CC-01";
   description =
     "Commits MUST be prefixed with a type, which consists of a noun, feat, fix, etc., followed by the OPTIONAL scope, OPTIONAL !, and REQUIRED terminal colon and space.";
-  validate(commit: IRawConventionalCommit) {
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  validate(commit: IRawConventionalCommit, _options?: IConventionalCommitOptions) {
     const errors: ExpressiveMessage[] = [];
 
     // MUST be prefixed with a type
@@ -119,7 +121,8 @@ class CC04 implements ICommitRequirement {
   description =
     "A scope MAY be provided after a type. A scope MUST consist of a noun describing a section of the codebase surrounded by parenthesis, e.g., fix(parser):";
 
-  validate(commit: IRawConventionalCommit): ExpressiveMessage[] {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  validate(commit: IRawConventionalCommit, _options?: IConventionalCommitOptions): ExpressiveMessage[] {
     const errors: ExpressiveMessage[] = [];
 
     if (
@@ -144,7 +147,9 @@ class CC05 implements ICommitRequirement {
   id = "CC-05";
   description =
     "A description MUST immediately follow the colon and space after the type/scope prefix. The description is a short summary of the code changes, e.g., fix: array parsing issue when multiple spaces were contained in string.";
-  validate(commit: IRawConventionalCommit): ExpressiveMessage[] {
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  validate(commit: IRawConventionalCommit, _options?: IConventionalCommitOptions): ExpressiveMessage[] {
     const errors: ExpressiveMessage[] = [];
 
     if (!commit.seperator.value) return errors;
@@ -162,4 +167,50 @@ class CC05 implements ICommitRequirement {
   }
 }
 
-export const commitRules: ICommitRequirement[] = [new CC01(), new CC04(), new CC05()];
+/**
+ * A scope MAY be provided after a type. A scope MUST consist of one of the configured values (feat, fix, ...) surrounded by parenthesis
+ */
+class EC01 implements ICommitRequirement {
+  id = "EC-01";
+  description = "A scope MAY be provided after a type. A scope MUST consist of one of the configured values (feat, fix, ...) surrounded by parenthesis";
+
+  validate(commit: IRawConventionalCommit, options?: IConventionalCommitOptions): ExpressiveMessage[] {
+    this.description = `A scope MAY be provided after a type. A scope MUST consist of one of the configured values (${options?.scopes?.join(
+      ", "
+    )}) surrounded by parenthesis`;
+
+    if (options === undefined || options.scopes === undefined || options.scopes.length === 0) return [];
+    if (commit.scope.value === undefined || options.scopes.includes(commit.scope.value.replace(/[()]+/g, "")))
+      return [];
+
+    return [
+      createError(
+        commit,
+        this.description,
+        ["A scope MUST consist of", `(${options?.scopes?.join(
+          ", "
+        )})`],
+        "scope"
+      ),
+    ];
+  }
+}
+
+/**
+ * Commits MUST be prefixed with a type, which consists of one of the configured values (...)
+ */
+class EC02 implements ICommitRequirement {
+  id = "EC-02";
+  description = "Commits MUST be prefixed with a type, which consists of one of the configured values (...)";
+
+  validate(commit: IRawConventionalCommit, options?: IConventionalCommitOptions): ExpressiveMessage[] {
+    this.description = `Commits MUST be prefixed with a type, which consists of one of the configured values (${["feat", "fix", ...options?.types ?? []].join(", ")}).`;
+
+    if (options === undefined || options.types === undefined || options.types.length === 0) return [];
+    if (commit.type.value !== undefined && ["feat", "fix", ...options.types].includes(commit.type.value)) return [];
+
+    return [createError(commit, this.description, ["prefixed with a type, which consists of", `(${["feat", "fix", ...options?.types ?? []].join(", ")})`], "type")];
+  }
+}
+
+export const commitRules: ICommitRequirement[] = [new CC01(), new CC04(), new CC05(), new EC01(), new EC02()];

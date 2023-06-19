@@ -137,7 +137,7 @@ BREAKING-CHANGE: This is a breaking change
       body: undefined,
       footer: {
         "Acknowledged-by": "Jane Doe",
-      }
+      },
     });
 
     expect(commitIt.getCommit({ hash: "0a0b0c0d", message: multiFooter })).toStrictEqual({
@@ -149,7 +149,7 @@ BREAKING-CHANGE: This is a breaking change
       footer: {
         "Acknowledged-by": "Jane Doe",
         "Signed-off-by": "John Doe",
-      }
+      },
     });
 
     expect(commitIt.getCommit({ hash: "0a0b0c0d", message: paragraphFooter })).toStrictEqual({
@@ -162,7 +162,7 @@ BREAKING-CHANGE: This is a breaking change
         "Acknowledged-by": "Jane Doe",
         "Signed-off-by": "John Doe",
         "BREAKING-CHANGE": "This is a breaking change\nusing multiple lines as value",
-      }
+      },
     });
   });
 
@@ -190,8 +190,8 @@ Implements #1234`;
         "Acknowledged-by": "Jane Doe",
         "Signed-off-by": "John Doe",
         "BREAKING-CHANGE": "This is a breaking change\nusing multiple lines as value",
-        "Implements": "#1234",
-      }
+        Implements: "#1234",
+      },
     });
   });
 });

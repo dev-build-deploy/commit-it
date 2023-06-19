@@ -6,13 +6,14 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 import * as commitIt from "../src/index";
 import { ICommit } from "../src/commit";
+import { IConventionalCommitOptions } from "../src/conventional_commit";
 
 const removeColors = (message: string) => {
   // eslint-disable-next-line no-control-regex
   return message.replace(/\x1b\[[0-9;]*m/g, "");
 };
 
-const validateRequirement = (message: string, expected: string) => {
+const validateRequirement = (message: string, expected: string, options?: IConventionalCommitOptions) => {
   const msg = {
     hash: "1234567890",
     message: message,
@@ -20,7 +21,7 @@ const validateRequirement = (message: string, expected: string) => {
 
   let commit: ICommit = commitIt.getCommit(msg);
   try {
-    commit = commitIt.getConventionalCommit(commit);
+    commit = commitIt.getConventionalCommit(commit, options);
     throw new Error(`Expected error message '${expected}', but no errors thrown.`);
   } catch (error: unknown) {
     if (!(error instanceof commitIt.ConventionalCommitError)) throw error;
@@ -59,39 +60,47 @@ describe("Conventional Commits specification", () => {
     ]) {
       expect(() => {
         const commit = commitIt.getCommit({ hash: "01ab2cd3", message: subject });
+        expect(commitIt.isConventionalCommit(commit)).toBe(false);
         expect(commitIt.isConventionalCommit(commitIt.getConventionalCommit(commit))).toBe(true);
-        expect(commitIt.isConventionalCommit(commit)).toBe(true);
       }).not.toThrow();
     }
   });
 
   test("Has breaking change", () => {
-    expect(commitIt.getConventionalCommit({
-      hash: "01ab2cd3",
-      subject: "feat: add new feature without breaking change",
-    }).breaking).toBe(false);
+    expect(
+      commitIt.getConventionalCommit({
+        hash: "01ab2cd3",
+        subject: "feat: add new feature without breaking change",
+      }).breaking
+    ).toBe(false);
 
-    expect(commitIt.getConventionalCommit({
-      hash: "01ab2cd3",
-      subject: "feat!: add new feature with breaking change",
-    }).breaking).toBe(true);
+    expect(
+      commitIt.getConventionalCommit({
+        hash: "01ab2cd3",
+        subject: "feat!: add new feature with breaking change",
+      }).breaking
+    ).toBe(true);
 
-    expect(commitIt.getConventionalCommit({
-      hash: "01ab2cd3",
-      subject: "feat: add new feature with breaking change in footer",
-      footer: {
-        "BREAKING CHANGE": "this is a breaking change",
-      }
-    }).breaking).toBe(true);
+    expect(
+      commitIt.getConventionalCommit({
+        hash: "01ab2cd3",
+        subject: "feat: add new feature with breaking change in footer",
+        footer: {
+          "BREAKING CHANGE": "this is a breaking change",
+        },
+      }).breaking
+    ).toBe(true);
 
-    expect(commitIt.getConventionalCommit({
-      hash: "01ab2cd3",
-      subject: "feat: add new feature with breaking change in footer",
-      footer: {
-        "BREAKING-CHANGE": "this is a breaking change",
-      }
-    }).breaking).toBe(true);
-  })
+    expect(
+      commitIt.getConventionalCommit({
+        hash: "01ab2cd3",
+        subject: "feat: add new feature with breaking change in footer",
+        footer: {
+          "BREAKING-CHANGE": "this is a breaking change",
+        },
+      }).breaking
+    ).toBe(true);
+  });
 
   test("CC-01", () => {
     for (const message of [
@@ -140,6 +149,28 @@ describe("Conventional Commits specification", () => {
         message,
         "A description MUST immediately follow the colon and space after the type/scope prefix. The description is a short summary of the code changes, e.g., fix: array parsing issue when multiple spaces were contained in string."
       );
+    }
+  });
+});
+
+describe("Extended Conventional Commits specification", () => {
+  test("EC-01", () => {
+    for (const message of ["feat(wrong): unknown scope"]) {
+      validateRequirement(
+        message,
+        "A scope MAY be provided after a type. A scope MUST consist of one of the configured values (action, cli) surrounded by parenthesis",
+        {
+          scopes: ["action", "cli"],
+        }
+      );
+    }
+  });
+
+  test("EC-02", () => {
+    for (const message of ["chore: unknown type", "docs(scope)!: unknown type"]) {
+      validateRequirement(message, "Commits MUST be prefixed with a type, which consists of one of the configured values (feat, fix, build, perf)", {
+        types: ["build", "perf"],
+      });
     }
   });
 });

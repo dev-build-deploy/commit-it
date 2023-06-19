@@ -10,6 +10,17 @@ import { ICommit } from "./commit";
 import { ExpressiveMessage } from "@dev-build-deploy/diagnose-it";
 
 /**
+ * Conventional Commit options
+ * @interface IConventionalCommitOptions
+ * @member scopes List of scopes to use when validating the commit message
+ * @member types List of types to use when validating the commit message (NOTE: always includes "feat" and "fix")
+ */
+export interface IConventionalCommitOptions {
+  scopes?: string[];
+  types?: string[];
+}
+
+/**
  * Conventional Commit element
  * @interface IConventionalCommitElement
  * @member index Index of the element in the commit message
@@ -94,10 +105,10 @@ function hasBreakingChange(commit: IRawConventionalCommit): boolean {
  * @throws ExpressiveMessage[] if the commit message is not a valid Conventional Commit
  * @see https://www.conventionalcommits.org/en/v1.0.0/
  */
-function validate(commit: IRawConventionalCommit): IConventionalCommit {
+function validate(commit: IRawConventionalCommit, options?: IConventionalCommitOptions): IConventionalCommit {
   let errors: ExpressiveMessage[] = [];
 
-  requirements.commitRules.forEach(rule => (errors = [...errors, ...rule.validate(commit)]));
+  requirements.commitRules.forEach(rule => (errors = [...errors, ...rule.validate(commit, options)]));
   if (errors.length > 0) throw new ConventionalCommitError(errors);
 
   // Assume that we have a valid Conventional Commit message
@@ -119,23 +130,17 @@ function validate(commit: IRawConventionalCommit): IConventionalCommit {
  * @returns Whether the provided commit is a Conventional Commit
  */
 export function isConventionalCommit(commit: ICommit | IConventionalCommit): boolean {
-  if ("type" in commit) return true;
-
-  try {
-    getConventionalCommit(commit);
-    return true;
-  } catch (error) {
-    return false;
-  }
+  return "type" in commit;
 }
 
 /**
  * Parses a Commit message into a Conventional Commit.
  * @param commit Commit message to parse
+ * @param options Options to use when parsing the commit message
  * @throws ExpressiveMessage[] if the commit message is not a valid Conventional Commit
  * @returns Conventional Commit
  */
-export function getConventionalCommit(commit: ICommit): IConventionalCommit {
+export function getConventionalCommit(commit: ICommit, options?: IConventionalCommitOptions): IConventionalCommit {
   const ConventionalCommitRegex = new RegExp(
     /^(?<type>[^(!:]*)(?<scope>\(.*\))?(?<breaking>\s*!)?(?<separator>\s*:)?(?<spacing>\s*)(?<subject>.*)?$/
   );
@@ -163,5 +168,5 @@ export function getConventionalCommit(commit: ICommit): IConventionalCommit {
 
   conventionalCommit = intializeIndices(conventionalCommit);
 
-  return validate(conventionalCommit);
+  return validate(conventionalCommit, options);
 }
