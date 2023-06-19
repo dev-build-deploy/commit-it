@@ -15,7 +15,6 @@ Lightweight (Conventional) Commits library, allowing you to retrieve (Convention
 * Simple to use
 * Retrieving commit messages from your git objects or provided string
 * Validate commit message against the [Conventional Commits] specification
-* No additional dependencies (neither `git`, or other npm packages)
 
 ## Basic Usage
 
