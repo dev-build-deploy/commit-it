@@ -14,7 +14,7 @@ describe("Validate example code in README.md", () => {
 
   test("Git Source", () => {
     // Retrieve commit from your git objects database
-    const gitCommit = getCommit({ hash: "28609b79271821c451a21814bacf0807f1a5d0f9" });
+    const gitCommit = getCommit({ hash: "f1aaa6e0b89eb87b591ab623053845b5d5488d9f" });
     const conventionalCommit = getConventionalCommit(gitCommit);
 
     // NOTE: See "Non-compliant Conventional Commits message" for details on how to capture failures.
