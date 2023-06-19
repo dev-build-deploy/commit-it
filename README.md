@@ -14,7 +14,7 @@ Lightweight (Conventional) Commits library, allowing you to retrieve (Convention
 
 * Simple to use
 * Retrieving commit messages from your git objects or provided string
-* Validate commit message against the [Conventional Commits] specification
+* Validate the commit message against the [Conventional Commits specification]
 
 ## Basic Usage
 
