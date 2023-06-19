@@ -6,7 +6,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 # CommitIt - Conventional Commits Library
 
-Lightweight (Conventional) Commits library, allowing you to retrieve (Conventional) Commits and verify them against the [Conventional Commits specification]
+Lightweight (Conventional) Commits library, allowing you to retrieve (Conventional) Commits and verify them against the [(Extended) Conventional Commits specification]
 
 <img src="./docs/images/example.svg" width="100%">
 
@@ -14,7 +14,7 @@ Lightweight (Conventional) Commits library, allowing you to retrieve (Convention
 
 * Simple to use
 * Retrieving commit messages from your git objects or provided string
-* Validate the commit message against the [Conventional Commits specification]
+* Validate the commit message against the [(Extended) Conventional Commits specification]
 
 ## Basic Usage
 
@@ -24,7 +24,16 @@ import { getCommit, getConventionalCommit } from '@dev-build-deploy/commit-it';
 
 // Retrieve commit from your git objects database
 const gitCommit = getCommit({ hash: "f1aaa6e0b89eb87b591ab623053845b5d5488d9f" });
-const conventionalCommit = getConventionalCommit(gitCommit);
+
+// OPTIONAL; Conventional Commits options
+const conventionalOptions = {
+  // EC-01: A scope MAY be provided after a type. A scope MUST consist of one of the configured values (...) surrounded by parenthesis
+  scopes: [ "core", "cli", "action" ],
+
+  // EC-02: Commits MUST be prefixed with a type, which consists of one of the configured values (feat, fix, ...)
+  types: [ "build", "ci", "docs", "perf", "refactor", "style", "test" ],
+}
+const conventionalCommit = getConventionalCommit(gitCommit, conventionalOptions);
 
 // NOTE: See "Non-compliant Conventional Commits message" for details on how to capture failures.
 
@@ -95,4 +104,4 @@ For more, check out the [Contributing Guide](CONTRIBUTING.md).
 - [GPL-3.0-or-later AND CC0-1.0](LICENSE) © 2023 Kevin de Jong \<monkaii@hotmail.com\>
 - [CC-BY-3.0](LICENSE) © 2023 Free Software Foundation Europe e.V.
 
-[Conventional Commits specification]: https://www.conventionalcommits.org/en/v1.0.0/
+[(Extended) Conventional Commits specification]: ./docs/rules.md

@@ -16,4 +16,5 @@ export {
   isConventionalCommit,
   ConventionalCommitError,
   IConventionalCommit,
+  IConventionalCommitOptions,
 } from "./conventional_commit";
