@@ -1,6 +1,6 @@
 {
   "name": "@dev-build-deploy/commit-it",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "(Conventional) Commits library",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -13,7 +13,7 @@
   "author": "Kevin de Jong",
   "license": "GPL-3.0-or-later",
   "keywords": [
-    "Conventional Commits",
+    "Conventiognal Commits",
     "Commits"
   ],
   "repository": {
