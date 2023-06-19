@@ -168,9 +168,13 @@ describe("Extended Conventional Commits specification", () => {
 
   test("EC-02", () => {
     for (const message of ["chore: unknown type", "docs(scope)!: unknown type"]) {
-      validateRequirement(message, "Commits MUST be prefixed with a type, which consists of one of the configured values (feat, fix, build, perf)", {
-        types: ["build", "perf"],
-      });
+      validateRequirement(
+        message,
+        "Commits MUST be prefixed with a type, which consists of one of the configured values (feat, fix, build, perf)",
+        {
+          types: ["build", "perf"],
+        }
+      );
     }
   });
 });

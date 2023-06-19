@@ -53,7 +53,7 @@ function createError(
     .lineNumber(1)
     .caret(data.index, data.value?.length || 0)
     .context(
-      commit.commit.body !== undefined && commit.commit.body.split("\n").length > 1 && commit.commit.body[0] !== ""
+      commit.commit.body !== undefined && commit.commit.body.split("\n").length >= 1
         ? [commit.commit.subject, "", ...commit.commit.body.split("\n")]
         : [commit.commit.subject],
       1
@@ -172,7 +172,8 @@ class CC05 implements ICommitRequirement {
  */
 class EC01 implements ICommitRequirement {
   id = "EC-01";
-  description = "A scope MAY be provided after a type. A scope MUST consist of one of the configured values (feat, fix, ...) surrounded by parenthesis";
+  description =
+    "A scope MAY be provided after a type. A scope MUST consist of one of the configured values (feat, fix, ...) surrounded by parenthesis";
 
   validate(commit: IRawConventionalCommit, options?: IConventionalCommitOptions): ExpressiveMessage[] {
     this.description = `A scope MAY be provided after a type. A scope MUST consist of one of the configured values (${options?.scopes?.join(
@@ -184,14 +185,7 @@ class EC01 implements ICommitRequirement {
       return [];
 
     return [
-      createError(
-        commit,
-        this.description,
-        ["A scope MUST consist of", `(${options?.scopes?.join(
-          ", "
-        )})`],
-        "scope"
-      ),
+      createError(commit, this.description, ["A scope MUST consist of", `(${options?.scopes?.join(", ")})`], "scope"),
     ];
   }
 }
@@ -204,12 +198,23 @@ class EC02 implements ICommitRequirement {
   description = "Commits MUST be prefixed with a type, which consists of one of the configured values (...)";
 
   validate(commit: IRawConventionalCommit, options?: IConventionalCommitOptions): ExpressiveMessage[] {
-    this.description = `Commits MUST be prefixed with a type, which consists of one of the configured values (${["feat", "fix", ...options?.types ?? []].join(", ")}).`;
+    this.description = `Commits MUST be prefixed with a type, which consists of one of the configured values (${[
+      "feat",
+      "fix",
+      ...(options?.types ?? []),
+    ].join(", ")}).`;
 
     if (options === undefined || options.types === undefined || options.types.length === 0) return [];
     if (commit.type.value !== undefined && ["feat", "fix", ...options.types].includes(commit.type.value)) return [];
 
-    return [createError(commit, this.description, ["prefixed with a type, which consists of", `(${["feat", "fix", ...options?.types ?? []].join(", ")})`], "type")];
+    return [
+      createError(
+        commit,
+        this.description,
+        ["prefixed with a type, which consists of", `(${["feat", "fix", ...(options?.types ?? [])].join(", ")})`],
+        "type"
+      ),
+    ];
   }
 }
 
