@@ -65,6 +65,34 @@ describe("Conventional Commits specification", () => {
     }
   });
 
+  test("Has breaking change", () => {
+    expect(commitIt.getConventionalCommit({
+      hash: "01ab2cd3",
+      subject: "feat: add new feature without breaking change",
+    }).breaking).toBe(false);
+
+    expect(commitIt.getConventionalCommit({
+      hash: "01ab2cd3",
+      subject: "feat!: add new feature with breaking change",
+    }).breaking).toBe(true);
+
+    expect(commitIt.getConventionalCommit({
+      hash: "01ab2cd3",
+      subject: "feat: add new feature with breaking change in footer",
+      footer: {
+        "BREAKING CHANGE": "this is a breaking change",
+      }
+    }).breaking).toBe(true);
+
+    expect(commitIt.getConventionalCommit({
+      hash: "01ab2cd3",
+      subject: "feat: add new feature with breaking change in footer",
+      footer: {
+        "BREAKING-CHANGE": "this is a breaking change",
+      }
+    }).breaking).toBe(true);
+  })
+
   test("CC-01", () => {
     for (const message of [
       "(scope): missing type",

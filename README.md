@@ -23,7 +23,7 @@ Lightweight (Conventional) Commits library, allowing you to retrieve (Convention
 import { getCommit, getConventionalCommit } from '@dev-build-deploy/commit-it';
 
 // Retrieve commit from your git objects database
-const gitCommit = getCommit({ hash: "28609b79271821c451a21814bacf0807f1a5d0f9" });
+const gitCommit = getCommit({ hash: "f1aaa6e0b89eb87b591ab623053845b5d5488d9f" });
 const conventionalCommit = getConventionalCommit(gitCommit);
 
 // NOTE: See "Non-compliant Conventional Commits message" for details on how to capture failures.
@@ -35,20 +35,23 @@ console.log(JSON.stringify(conventionalCommit, null, 2))
 
 ```json
 {
-  "hash": "28609b79271821c451a21814bacf0807f1a5d0f9",
+  "hash": "f1aaa6e0b89eb87b591ab623053845b5d5488d9f",
   "author": {
     "name": "Kevin de Jong <monkaii@hotmail.com>",
-    "date": "2023-06-16T15:01:30.000Z"
+    "date": "2023-06-19T04:20:03.000Z"
   },
   "committer": {
-    "name": "Kevin de Jong <134343960+Kevin-de-Jong@users.noreply.github.com>",
-    "date": "2023-06-18T01:41:24.000Z"
+    "name": "Kevin de Jong <monkaii@hotmail.com>",
+    "date": "2023-06-19T04:20:03.000Z"
   },
-  "subject": "feat: add support to retrieve commits from a git source by SHA",
-  "body": "This commit introduces custom parsing of the objects and pack files\nin .git/objects. Rationale: remove any need for external dependencies\n(albeit packages or tools).\n\nCalling `getCommitMessage(...)` will return a standard ICommit object",
+  "subject": "feat: mark Conventional Commit as 'breaking' in case specified in the footer",
+  "body": "A Conventional Commit must be marked as a BREAKING change when:\n- An exlamantion mark (`!`) is used in the subject\n- The footer contains either `BREAKING-CHANGE: xyz` or `BREAKING CHANGE: xyz`\n\nThis commit adds the second use case.",
+  "footer": {
+    "Implements": "#6"
+  },
   "type": "feat",
   "breaking": false,
-  "description": "add support to retrieve commits from a git source by SHA"
+  "description": "mark Conventional Commit as 'breaking' in case specified in the footer"
 }
 ```
 

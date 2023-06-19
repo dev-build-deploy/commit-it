@@ -75,6 +75,19 @@ export class ConventionalCommitError extends Error {
 }
 
 /**
+ * Returns whether the provided commit has a breaking change (either "!" in subject, or usage of /BREAKING[- ]CHANGE:/).
+ * @param commit Commit to check
+ * @returns Whether the provided commit has a breaking change
+ */
+function hasBreakingChange(commit: IRawConventionalCommit): boolean {
+  return (
+    commit.breaking.value === "!" ||
+    (commit.commit.footer !== undefined &&
+      ("BREAKING CHANGE" in commit.commit.footer || "BREAKING-CHANGE" in commit.commit.footer))
+  );
+}
+
+/**
  * Validates a commit message against the Conventional Commit specification.
  * @param commit Commit message to validate against the Conventional Commit specification
  * @returns Conventional Commit mesage
@@ -95,7 +108,7 @@ function validate(commit: IRawConventionalCommit): IConventionalCommit {
     ...commit.commit,
     type: commit.type.value,
     scope: commit.scope.value,
-    breaking: commit.breaking.value === "!",
+    breaking: hasBreakingChange(commit),
     description: commit.description.value,
   };
 }

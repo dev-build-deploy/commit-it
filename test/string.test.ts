@@ -135,7 +135,9 @@ BREAKING-CHANGE: This is a breaking change
       committer: undefined,
       subject: "Example commit message with footer",
       body: undefined,
-      footer: "Acknowledged-by: Jane Doe",
+      footer: {
+        "Acknowledged-by": "Jane Doe",
+      }
     });
 
     expect(commitIt.getCommit({ hash: "0a0b0c0d", message: multiFooter })).toStrictEqual({
@@ -144,7 +146,10 @@ BREAKING-CHANGE: This is a breaking change
       committer: undefined,
       subject: "Example commit message with footer",
       body: undefined,
-      footer: "Acknowledged-by: Jane Doe\nSigned-off-by: John Doe",
+      footer: {
+        "Acknowledged-by": "Jane Doe",
+        "Signed-off-by": "John Doe",
+      }
     });
 
     expect(commitIt.getCommit({ hash: "0a0b0c0d", message: paragraphFooter })).toStrictEqual({
@@ -153,8 +158,11 @@ BREAKING-CHANGE: This is a breaking change
       committer: undefined,
       subject: "Example commit message with footer",
       body: undefined,
-      footer:
-        "Acknowledged-by: Jane Doe\nSigned-off-by: John Doe\nBREAKING-CHANGE: This is a breaking change\n using multiple lines as value",
+      footer: {
+        "Acknowledged-by": "Jane Doe",
+        "Signed-off-by": "John Doe",
+        "BREAKING-CHANGE": "This is a breaking change\nusing multiple lines as value",
+      }
     });
   });
 
@@ -169,7 +177,8 @@ and: paragraphs as well
 Acknowledged-by: Jane Doe
 Signed-off-by: John Doe
 BREAKING-CHANGE: This is a breaking change
- using multiple lines as value`;
+ using multiple lines as value
+Implements #1234`;
 
     expect(commitIt.getCommit({ hash: "0a0b0c0d", message: fullCommit })).toStrictEqual({
       hash: "0a0b0c0d",
@@ -177,8 +186,12 @@ BREAKING-CHANGE: This is a breaking change
       committer: undefined,
       subject: "Example commit message with footer",
       body: "This is the body of the commit message\nwith multiple lines\n\nand: paragraphs as well",
-      footer:
-        "Acknowledged-by: Jane Doe\nSigned-off-by: John Doe\nBREAKING-CHANGE: This is a breaking change\n using multiple lines as value",
+      footer: {
+        "Acknowledged-by": "Jane Doe",
+        "Signed-off-by": "John Doe",
+        "BREAKING-CHANGE": "This is a breaking change\nusing multiple lines as value",
+        "Implements": "#1234",
+      }
     });
   });
 });

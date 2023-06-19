@@ -63,7 +63,45 @@ export interface ICommit {
   hash: string;
   subject: string;
   body?: string;
-  footer?: string;
+  footer?: Record<string, string>;
+}
+
+/**
+ * Returns a dictionary containing key-value pairs extracted from the footer of the provided commit message.
+ * The key must either be:
+ * - a single word (optional, using - as a seperator) followed by a colon (:)
+ * - BREAKING CHANGE:
+ *
+ * The value is either:
+ * - the remainder of the line
+ * - the remainder of the line + anything that follows on the next lines which is indented by at least one space
+ */
+function parseCommitFooter(footer: string): Record<string, string> | undefined {
+  const footerLines = footer.split(/[\r\n]+/);
+  const result: Record<string, string> = {};
+
+  for (let lineNr = 0; lineNr < footerLines.length; lineNr++) {
+    const line = footerLines[lineNr];
+    const match = /^((BREAKING CHANGE:)|([\w-]+(:| #))|([ \t]+)\w)/.exec(line);
+    if (match === null) continue;
+
+    let key = match[1].replace(/:$/, "");
+    let value = line.substring(match[1].length).trim();
+    if (match[1].endsWith(" #")) {
+      key = match[1].substring(0, match[1].length - 2);
+      value = `#${value}`
+    }
+
+    // Check if the value continues on the next line
+    while (lineNr + 1 < footerLines.length && footerLines[lineNr + 1].startsWith(" ")) {
+      lineNr++;
+      value += "\n" + footerLines[lineNr].trim();
+    }
+
+    result[key] = value;
+  }
+
+  return Object.keys(result).length > 0 ? result : undefined;
 }
 
 /**
@@ -73,10 +111,14 @@ export interface ICommit {
  * @returns The parsed commit object
  * @internal
  */
-export function parseCommitMessage(message: string): { subject: string; body?: string; footer?: string } {
+export function parseCommitMessage(message: string): {
+  subject: string;
+  body?: string;
+  footer?: Record<string, string>;
+} {
   const isTrailerOnly = (message: string): boolean =>
     message.split(/[\r\n]+/).every(line => {
-      const match = /^((BREAKING CHANGE:)|([\w-]+:)|([ \t]+)\w)/.exec(line);
+      const match = /^((BREAKING CHANGE:)|([\w-]+(:| #))|([ \t]+)\w)/.exec(line);
       return match !== null;
     });
 
@@ -97,7 +139,7 @@ export function parseCommitMessage(message: string): { subject: string; body?: s
   return {
     subject: paragraphs[0].trim(),
     body: body,
-    footer: footer,
+    footer: parseCommitFooter(footer ?? ""),
   };
 }
 
