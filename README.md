@@ -6,7 +6,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 # CommitIt - Conventional Commits Library
 
-Lightweight (Conventional) Commits library, allowing you to retrieve (Conventional) Commits and verify them agains the [Conventional Commits specification]
+Lightweight (Conventional) Commits library, allowing you to retrieve (Conventional) Commits and verify them against the [Conventional Commits specification]
 
 <img src="./docs/images/example.svg" width="100%">
 
@@ -91,3 +91,5 @@ For more, check out the [Contributing Guide](CONTRIBUTING.md).
 
 - [GPL-3.0-or-later AND CC0-1.0](LICENSE) © 2023 Kevin de Jong \<monkaii@hotmail.com\>
 - [CC-BY-3.0](LICENSE) © 2023 Free Software Foundation Europe e.V.
+
+[Conventional Commits specification]: https://www.conventionalcommits.org/en/v1.0.0/
