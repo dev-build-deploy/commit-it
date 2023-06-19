@@ -89,18 +89,12 @@ function getCommitFromLocalObjects(hash: string, rootPath: string): ccommit.ICom
 }
 
 /**
- * Returns a Commit object for the provided hash
+ * Iterates through all pack files and returns the commit message for the provided hash
  * @param hash Hash of the commit to read
- * @returns Commit object
- * @internal
+ * @param rootPath Path to the git repository
+ * @returns Commit object or undefined if the commit could not be found in the pack files
  */
-export function getCommitFromHash(hash: string, rootPath: string): ccommit.ICommit {
-  if (!fs.existsSync(path.join(rootPath, gitObjectFolder)))
-    throw new Error(`Invalid git folder specified (${path.join(rootPath, gitObjectFolder)})`);
-  const message = getCommitFromLocalObjects(hash, rootPath);
-
-  if (message !== undefined) return message;
-
+function getCommitFromPackFile(hash: string, rootPath: string): ccommit.ICommit | undefined {
   for (const entry of fs.readdirSync(path.join(rootPath, gitObjectFolder, "pack"))) {
     const filePath = path.join(rootPath, gitObjectFolder, "pack", entry);
     if (path.extname(filePath) !== ".idx") continue;
@@ -111,6 +105,23 @@ export function getCommitFromHash(hash: string, rootPath: string): ccommit.IComm
     const commit = readPackFile(filePath.replace(".idx", ".pack"), hashes[hash].readUint32BE());
     return parseCommitMessage(commit, hash);
   }
+}
+
+/**
+ * Returns a Commit object for the provided hash
+ * @param hash Hash of the commit to read
+ * @returns Commit object
+ * @internal
+ */
+export function getCommitFromHash(hash: string, rootPath: string): ccommit.ICommit {
+  if (!fs.existsSync(path.join(rootPath, gitObjectFolder)))
+    throw new Error(`Invalid git folder specified (${path.join(rootPath, gitObjectFolder)})`);
+
+  let message = getCommitFromLocalObjects(hash, rootPath);
+  if (message !== undefined) return message;
+
+  message = getCommitFromPackFile(hash, rootPath);
+  if (message !== undefined) return message;
 
   throw new Error("Could not find commit message for hash " + hash);
 }

@@ -1,0 +1,154 @@
+/* 
+SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
+
+SPDX-License-Identifier: GPL-3.0-or-later
+*/
+
+import assert from "assert";
+import * as requirements from "./requirements";
+import { ICommit } from "./commit";
+import { ExpressiveMessage } from "@dev-build-deploy/diagnose-it";
+
+/**
+ * Conventional Commit element
+ * @interface IConventionalCommitElement
+ * @member index Index of the element in the commit message
+ * @member value Value of the element in the commit message
+ * @internal
+ */
+export type IConventionalCommitElement = {
+  index: number;
+  value?: string;
+};
+
+/**
+ * Raw data structure used to validate a Commit message against the Conventional Commit specification.
+ * @interface IRawConventionalCommit
+ * @member commit Original commit
+ * @member type Conventional Commit type
+ * @member scope Conventional Commit scope
+ * @member seperator Commit message has a Conventional Commit seperator (:)
+ * @member breaking Commit message has a Conventional Commit breaking change (!)
+ * @member subject Conventional Commit subject
+ * @member body Commit message body
+ * @internal
+ */
+export interface IRawConventionalCommit {
+  commit: ICommit;
+  type: IConventionalCommitElement;
+  scope: IConventionalCommitElement;
+  breaking: IConventionalCommitElement;
+  seperator: IConventionalCommitElement;
+  spacing: IConventionalCommitElement;
+  description: IConventionalCommitElement;
+  body: IConventionalCommitElement;
+}
+
+/**
+ * Conventional Commit
+ * @interface IConventionalCommit
+ * @member type Conventional Commit type
+ * @member scope Conventional Commit scope
+ * @member breaking Commit message has a Conventional Commit breaking change (!)
+ * @member description Conventional Commit description
+ */
+export interface IConventionalCommit extends ICommit {
+  type: string;
+  scope?: string;
+  breaking?: boolean;
+  description: string;
+}
+
+/**
+ * Conventional Commit error
+ * @class ConventionalCommitError
+ * @extends Error
+ * @member errors List of error messages
+ */
+export class ConventionalCommitError extends Error {
+  errors: ExpressiveMessage[];
+  constructor(errors: ExpressiveMessage[]) {
+    super("Commit is not compliant with the Conventional Commits specification.");
+    this.name = "ConventionalCommitError";
+    this.errors = errors;
+  }
+}
+
+/**
+ * Validates a commit message against the Conventional Commit specification.
+ * @param commit Commit message to validate against the Conventional Commit specification
+ * @returns Conventional Commit mesage
+ * @throws ExpressiveMessage[] if the commit message is not a valid Conventional Commit
+ * @see https://www.conventionalcommits.org/en/v1.0.0/
+ */
+function validate(commit: IRawConventionalCommit): IConventionalCommit {
+  let errors: ExpressiveMessage[] = [];
+
+  requirements.commitRules.forEach(rule => (errors = [...errors, ...rule.validate(commit)]));
+  if (errors.length > 0) throw new ConventionalCommitError(errors);
+
+  // Assume that we have a valid Conventional Commit message
+  assert(commit.type.value);
+  assert(commit.description.value);
+
+  return {
+    ...commit.commit,
+    type: commit.type.value,
+    scope: commit.scope.value,
+    breaking: commit.breaking.value === "!",
+    description: commit.description.value,
+  };
+}
+
+/**
+ * Returns whether the provided commit is a Conventional Commit.
+ * @param commit Commit to check
+ * @returns Whether the provided commit is a Conventional Commit
+ */
+export function isConventionalCommit(commit: ICommit | IConventionalCommit): boolean {
+  if ("type" in commit) return true;
+
+  try {
+    getConventionalCommit(commit);
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+/**
+ * Parses a Commit message into a Conventional Commit.
+ * @param commit Commit message to parse
+ * @throws ExpressiveMessage[] if the commit message is not a valid Conventional Commit
+ * @returns Conventional Commit
+ */
+export function getConventionalCommit(commit: ICommit): IConventionalCommit {
+  const ConventionalCommitRegex = new RegExp(
+    /^(?<type>[^(!:]*)(?<scope>\(.*\))?(?<breaking>\s*!)?(?<separator>\s*:)?(?<spacing>\s*)(?<subject>.*)?$/
+  );
+
+  const match = ConventionalCommitRegex.exec(commit.subject);
+  let conventionalCommit: IRawConventionalCommit = {
+    commit: commit,
+    type: { index: 0, value: match?.groups?.type },
+    scope: { index: 0, value: match?.groups?.scope },
+    breaking: { index: 0, value: match?.groups?.breaking },
+    seperator: { index: 0, value: match?.groups?.separator },
+    spacing: { index: 0, value: match?.groups?.spacing },
+    description: { index: 0, value: match?.groups?.subject },
+    body: { index: 0, value: commit.body },
+  };
+
+  function intializeIndices(commit: IRawConventionalCommit) {
+    commit.scope.index = commit.type.index + (commit.type.value?.length ?? 0);
+    commit.breaking.index = commit.scope.index + (commit.scope.value?.length ?? 0);
+    commit.seperator.index = commit.breaking.index + (commit.breaking.value?.length ?? 0);
+    commit.spacing.index = commit.seperator.index + (commit.seperator.value?.length ?? 0);
+    commit.description.index = commit.spacing.index + (commit.spacing.value?.length ?? 0);
+    return commit;
+  }
+
+  conventionalCommit = intializeIndices(conventionalCommit);
+
+  return validate(conventionalCommit);
+}

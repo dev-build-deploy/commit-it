@@ -4,4 +4,16 @@ SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
 SPDX-License-Identifier: GPL-3.0-or-later
 */
 
-export { getCommit } from "./commit";
+export {
+  getCommit,
+  ICommit,
+  IGitDataSourceOptions,
+  IStringDataSourceOptions,
+  IGitHubDataSourceOptions,
+} from "./commit";
+export {
+  getConventionalCommit,
+  isConventionalCommit,
+  ConventionalCommitError,
+  IConventionalCommit,
+} from "./conventional_commit";

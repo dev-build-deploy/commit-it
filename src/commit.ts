@@ -6,11 +6,16 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 import * as git from "./git";
 
-interface IDataSourceOptions {
+/**
+ * String data source options
+ * @interface IStringDataSourceOptions
+ * @member hash The commit hash
+ * @member author The commit author and date
+ * @member commiter The commit commiter and date
+ * @member message The commit message
+ */
+export interface IStringDataSourceOptions {
   hash: string;
-}
-
-interface IStringDataSourceOptions extends IDataSourceOptions {
   author?: { name: string; date: Date };
   committer?: { name: string; date: Date };
   message: string;
@@ -19,20 +24,24 @@ interface IStringDataSourceOptions extends IDataSourceOptions {
 /**
  * Git data source options
  * @interface IGitDataSourceOptions
+ * @member hash The commit hash
  * @member rootPath The root path of the git repository
  */
-interface IGitDataSourceOptions extends IDataSourceOptions {
+export interface IGitDataSourceOptions {
+  hash: string;
   rootPath?: string;
 }
 
 /**
  * GitHub data source options
  * @interface IGitHubDataSourceOptions
+ * @member hash The commit hash
  * @member owner The GitHub repository owner
  * @member repo The GitHub repository name
  * @member token The GitHub personal access token
  */
-interface IGitHubDataSourceOptions extends IDataSourceOptions {
+export interface IGitHubDataSourceOptions {
+  hash: string;
   owner: string;
   repo: string;
   token: string;
@@ -47,7 +56,6 @@ interface IGitHubDataSourceOptions extends IDataSourceOptions {
  * @member subject The commit subject
  * @member body The commit body
  * @member footer The commit footer
- * @internal
  */
 export interface ICommit {
   author?: { name: string; date: Date };
@@ -94,21 +102,31 @@ export function parseCommitMessage(message: string): { subject: string; body?: s
 }
 
 /**
+ * Confirms whether the provided commit is a Conventional Commit
+ * @param commit
+ * @returns
+ */
+export function isConventionalCommit(commit: ICommit): boolean {
+  return "type" in commit;
+}
+
+/**
  * Retrieves the commit message (from the indicated source) given the provided SHA hash
  * @param hash SHA of the commit
  * @param source The data source to retrieve the commit message from (git or github)
  * @param options The options to use when retrieving the commit message
  * @returns Commit object
- * @internal
  */
 export function getCommit(
   options: IStringDataSourceOptions | IGitDataSourceOptions | IGitHubDataSourceOptions
 ): ICommit {
+  let commit: ICommit;
+
   // String data source
   if ("message" in options) {
     const stringOptions = options as IStringDataSourceOptions;
 
-    return {
+    commit = {
       hash: stringOptions.hash,
       ...parseCommitMessage(stringOptions.message),
       author: stringOptions.author,
@@ -119,13 +137,15 @@ export function getCommit(
     const githubOptions = options as IGitHubDataSourceOptions;
 
     // TODO; implement basic GitHub client
-    return {
+    commit = {
       hash: githubOptions.hash,
       subject: "",
     };
+    // Git data source
+  } else {
+    const gitOptions = options as IGitDataSourceOptions;
+    commit = git.getCommitFromHash(gitOptions.hash, gitOptions.rootPath ?? process.cwd());
   }
-  // Git data source
-  const gitOptions = options as IGitDataSourceOptions;
 
-  return git.getCommitFromHash(gitOptions.hash, gitOptions.rootPath ?? process.cwd());
+  return commit;
 }
