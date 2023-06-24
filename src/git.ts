@@ -186,8 +186,7 @@ function readIdxFile(path: string): { [sha: string]: Buffer } {
 
   const hashMap: { [sha: string]: Buffer } = {};
   shaListing.forEach((sha, index) => {
-    const shaString = sha.toString("hex").replace("'", "");
-    hashMap[shaString] = packFileOffsets[index];
+    hashMap[sha.toString("hex")] = packFileOffsets[index];
   });
 
   return hashMap;
