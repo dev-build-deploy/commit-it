@@ -6,6 +6,7 @@
   "types": "lib/index.d.ts",
   "scripts": {
     "build": "tsc",
+    "publish": "tsc --project tsconfig.publish.json && npm publish",
     "test": "jest --coverage",
     "lint": "eslint --ext .ts test/*.ts src/*.ts",
     "format": "prettier --write src/*.ts test/*.ts && prettier --write lib/*.ts src/*.ts"
