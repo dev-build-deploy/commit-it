@@ -54,10 +54,7 @@ jobs:
       - name: Update version
         run: npm --no-git-tag-version version ${{ fromJSON(needs.release-me.outputs.release).tag_name }}
 
-      - name: Build package
-        run: npm run build
-
       - name: Publish package
-        run: npm publish
+        run: npm run publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
