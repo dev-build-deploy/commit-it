@@ -12,7 +12,7 @@
     "format": "prettier --write src/*.ts test/*.ts && prettier --write lib/*.ts src/*.ts"
   },
   "author": "Kevin de Jong",
-  "license": "GPL-3.0-or-later",
+  "license": "MIT",
   "keywords": [
     "Conventiognal Commits",
     "Commits"

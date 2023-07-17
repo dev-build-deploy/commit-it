@@ -1,7 +1,6 @@
 <!-- 
 SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
-
-SPDX-License-Identifier: GPL-3.0-or-later
+SPDX-License-Identifier: MIT
 -->
 
 # CommitIt - Conventional Commits Library
@@ -101,7 +100,7 @@ For more, check out the [Contributing Guide](CONTRIBUTING.md).
 
 ## License
 
-- [GPL-3.0-or-later AND CC0-1.0](LICENSE) © 2023 Kevin de Jong \<monkaii@hotmail.com\>
-- [CC-BY-3.0](LICENSE) © 2023 Free Software Foundation Europe e.V.
+- [MIT](./LICENSES/MIT.txt) © 2023 Kevin de Jong \<monkaii@hotmail.com\>
+- [CC-BY-3.0](./LICENSES/CC-BY-3.0.txt) © 2023 Free Software Foundation Europe e.V.
 
 [(Extended) Conventional Commits specification]: ./docs/rules.md
