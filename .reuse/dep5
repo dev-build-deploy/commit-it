@@ -5,15 +5,15 @@ Source: https://github.com/dev-build-deploy/commit-it
 
 Files: lib/**
 Copyright: 2023 Kevin de Jong <monkaii@hotmail.com>
-License: GPL-3.0-or-later
+License: MIT
 
 Files: test/environment/*
 Copyright: 2023 Kevin de Jong <monkaii@hotmail.com>
-License: GPL-3.0-or-later
+License: MIT
 
 Files: docs/images/*.svg
 Copyright: 2023 Kevin de Jong <monkaii@hotmail.com>
-License: GPL-3.0-or-later
+License: MIT
 
 Files: tsconfig*.json
 Copyright: 2023 Kevin de Jong <monkaii@hotmail.com>
