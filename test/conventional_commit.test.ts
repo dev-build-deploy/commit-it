@@ -56,6 +56,7 @@ describe("Conventional Commits specification", () => {
       "test: update tests",
       "test(unit)!: update unit tests which leads to a breaking change",
       "chore: update build scripts",
+      "feat(login): add support google oauth (#12)",
     ]) {
       expect(() => {
         const commit = commitIt.getCommit({ hash: "01ab2cd3", message: subject });

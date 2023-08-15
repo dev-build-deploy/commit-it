@@ -141,7 +141,7 @@ export function isConventionalCommit(commit: ICommit | IConventionalCommit): boo
  */
 export function getConventionalCommit(commit: ICommit, options?: IConventionalCommitOptions): IConventionalCommit {
   const ConventionalCommitRegex = new RegExp(
-    /^(?<type>[^(!:]*)(?<scope>\(.*\))?(?<breaking>\s*!)?(?<separator>\s*:)?(?<spacing>\s*)(?<subject>.*)?$/
+    /^(?<type>[^(!:]*)(?<scope>\([^)]*\))?(?<breaking>\s*!)?(?<separator>\s*:)?(?<spacing>\s*)(?<subject>.*)?$/
   );
 
   const match = ConventionalCommitRegex.exec(commit.subject);
