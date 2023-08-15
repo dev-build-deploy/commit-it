@@ -147,13 +147,13 @@ export function getConventionalCommit(commit: ICommit, options?: IConventionalCo
   const match = ConventionalCommitRegex.exec(commit.subject);
   let conventionalCommit: IRawConventionalCommit = {
     commit: commit,
-    type: { index: 0, value: match?.groups?.type },
-    scope: { index: 0, value: match?.groups?.scope },
-    breaking: { index: 0, value: match?.groups?.breaking },
-    seperator: { index: 0, value: match?.groups?.separator },
-    spacing: { index: 0, value: match?.groups?.spacing },
-    description: { index: 0, value: match?.groups?.subject },
-    body: { index: 0, value: commit.body },
+    type: { index: 1, value: match?.groups?.type },
+    scope: { index: 1, value: match?.groups?.scope },
+    breaking: { index: 1, value: match?.groups?.breaking },
+    seperator: { index: 1, value: match?.groups?.separator },
+    spacing: { index: 1, value: match?.groups?.spacing },
+    description: { index: 1, value: match?.groups?.subject },
+    body: { index: 1, value: commit.body },
   };
 
   function intializeIndices(commit: IRawConventionalCommit) {
