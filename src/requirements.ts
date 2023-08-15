@@ -51,7 +51,7 @@ function createError(
     .id(commit.commit.hash)
     .error(highlightString(description, highlight))
     .lineNumber(1)
-    .caret(data.index, data.value?.length || 0)
+    .caret(data.index, data.value?.length || 1)
     .context(
       commit.commit.body !== undefined && commit.commit.body.split("\n").length >= 1
         ? [commit.commit.subject, "", ...commit.commit.body.split("\n")]
