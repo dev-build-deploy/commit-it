@@ -5,7 +5,7 @@ SPDX-License-Identifier: MIT
 
 import assert from "assert";
 
-import { ExpressiveMessage } from "@dev-build-deploy/diagnose-it";
+import { DiagnosticsMessage } from "@dev-build-deploy/diagnose-it";
 
 import { ICommit } from "./commit";
 import * as requirements from "./requirements";
@@ -78,8 +78,8 @@ export interface IConventionalCommit extends ICommit {
  * @member errors List of error messages
  */
 export class ConventionalCommitError extends Error {
-  errors: ExpressiveMessage[];
-  constructor(errors: ExpressiveMessage[]) {
+  errors: DiagnosticsMessage[];
+  constructor(errors: DiagnosticsMessage[]) {
     super("Commit is not compliant with the Conventional Commits specification.");
     this.name = "ConventionalCommitError";
     this.errors = errors;
@@ -107,7 +107,7 @@ function hasBreakingChange(commit: IRawConventionalCommit): boolean {
  * @see https://www.conventionalcommits.org/en/v1.0.0/
  */
 function validate(commit: IRawConventionalCommit, options?: IConventionalCommitOptions): IConventionalCommit {
-  let errors: ExpressiveMessage[] = [];
+  let errors: DiagnosticsMessage[] = [];
 
   requirements.commitRules.forEach(rule => (errors = [...errors, ...rule.validate(commit, options)]));
   if (errors.length > 0) throw new ConventionalCommitError(errors);
