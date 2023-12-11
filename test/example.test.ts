@@ -3,8 +3,8 @@ SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
 SPDX-License-Identifier: MIT
 */
 
-import { getCommit, getConventionalCommit, ConventionalCommitError } from "../src/index";
 import * as git from "../src/git";
+import { getCommit, getConventionalCommit, ConventionalCommitError } from "../src/index";
 
 describe("Validate example code in README.md", () => {
   beforeAll(() => {

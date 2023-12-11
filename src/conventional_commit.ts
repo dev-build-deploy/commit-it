@@ -4,9 +4,11 @@ SPDX-License-Identifier: MIT
 */
 
 import assert from "assert";
-import * as requirements from "./requirements";
-import { ICommit } from "./commit";
+
 import { ExpressiveMessage } from "@dev-build-deploy/diagnose-it";
+
+import { ICommit } from "./commit";
+import * as requirements from "./requirements";
 
 /**
  * Conventional Commit options
@@ -156,7 +158,7 @@ export function getConventionalCommit(commit: ICommit, options?: IConventionalCo
     body: { index: 1, value: commit.body },
   };
 
-  function intializeIndices(commit: IRawConventionalCommit) {
+  function intializeIndices(commit: IRawConventionalCommit): IRawConventionalCommit {
     commit.scope.index = commit.type.index + (commit.type.value?.length ?? 0);
     commit.breaking.index = commit.scope.index + (commit.scope.value?.length ?? 0);
     commit.seperator.index = commit.breaking.index + (commit.breaking.value?.length ?? 0);

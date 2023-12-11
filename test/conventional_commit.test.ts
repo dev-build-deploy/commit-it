@@ -3,16 +3,16 @@ SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
 SPDX-License-Identifier: MIT
 */
 
-import * as commitIt from "../src/index";
 import { ICommit } from "../src/commit";
 import { IConventionalCommitOptions } from "../src/conventional_commit";
+import * as commitIt from "../src/index";
 
-const removeColors = (message: string) => {
+const removeColors = (message: string): string => {
   // eslint-disable-next-line no-control-regex
   return message.replace(/\x1b\[[0-9;]*m/g, "");
 };
 
-const validateRequirement = (message: string, expected: string, options?: IConventionalCommitOptions) => {
+const validateRequirement = (message: string, expected: string, options?: IConventionalCommitOptions): void => {
   const msg = {
     hash: "1234567890",
     message: message,

@@ -165,7 +165,7 @@ export function getCommit(
 
   // String data source
   if ("message" in options) {
-    const stringOptions = options as IStringDataSourceOptions;
+    const stringOptions = options;
 
     commit = {
       hash: stringOptions.hash,
@@ -175,7 +175,7 @@ export function getCommit(
     };
     // GitHub data source
   } else if ("owner" in options) {
-    const githubOptions = options as IGitHubDataSourceOptions;
+    const githubOptions = options;
 
     // TODO; implement basic GitHub client
     commit = {
@@ -184,7 +184,7 @@ export function getCommit(
     };
     // Git data source
   } else {
-    const gitOptions = options as IGitDataSourceOptions;
+    const gitOptions = options;
     commit = git.getCommitFromHash(gitOptions.hash, gitOptions.rootPath ?? process.cwd());
   }
 

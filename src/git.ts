@@ -3,11 +3,25 @@ SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
 SPDX-License-Identifier: MIT
 */
 
+import assert from "assert";
 import * as fs from "fs";
 import * as path from "path";
 import * as zlib from "zlib";
+
 import * as ccommit from "./commit";
-import assert from "assert";
+
+/** @internal */
+type NameAndDateType = { name: string; date: Date };
+
+/** @internal */
+type GitCommitType = {
+  hash: string;
+  author?: NameAndDateType;
+  committer?: NameAndDateType;
+  subject: string;
+  body?: string;
+  footer?: Record<string, string>;
+};
 
 /** @internal */
 export const gitObjectFolder = ".git/objects";
@@ -28,7 +42,7 @@ const dateToUTC = (epoch: number, timezone: number): Date => new Date(epoch * 10
  * @param value String to split
  * @returns Name and date object
  */
-function extractNameAndDate(value?: string) {
+function extractNameAndDate(value?: string): NameAndDateType | undefined {
   if (value === undefined) return undefined;
   const valueSplit = value.split(" ");
   const [epoch, timezone] = valueSplit.splice(-2).map(v => Number.parseInt(v));
@@ -45,7 +59,7 @@ function extractNameAndDate(value?: string) {
  * @param key Key to extract
  * @returns Value of the key
  */
-function getValueFromKey(commit: string, key: string) {
+function getValueFromKey(commit: string, key: string): string | undefined {
   const match = new RegExp("^" + key + " (.*)$", "m").exec(commit);
   return match ? match[1] : undefined;
 }
@@ -56,7 +70,7 @@ function getValueFromKey(commit: string, key: string) {
  * @param hash Commit hash
  * @returns Commit object
  */
-function parseCommitMessage(commit: string, hash: string) {
+function parseCommitMessage(commit: string, hash: string): GitCommitType {
   const author = extractNameAndDate(getValueFromKey(commit, "author"));
   const committer = extractNameAndDate(getValueFromKey(commit, "committer"));
 
@@ -133,7 +147,12 @@ export function getCommitFromHash(hash: string, rootPath: string): ccommit.IComm
  * @param size Number of entries to read
  * @returns Object containing the data and the index after reading
  */
-function readIdxListing(idxBuffer: Buffer, index: number, length: number, size: number) {
+function readIdxListing(
+  idxBuffer: Buffer,
+  index: number,
+  length: number,
+  size: number
+): { data: Buffer[]; index: number } {
   const result: Buffer[] = [];
   const end = index + size * length;
   while (index < end) {
@@ -151,7 +170,7 @@ function readIdxListing(idxBuffer: Buffer, index: number, length: number, size: 
  * @param length Length (in bytes) to read
  * @returns Buffer containing the data
  */
-function readFile(file: string, index: number, length: number) {
+function readFile(file: string, index: number, length: number): Buffer {
   const buffer = Buffer.alloc(length);
 
   const fd = fs.openSync(file, "r");
@@ -197,7 +216,7 @@ function readIdxFile(path: string): { [sha: string]: Buffer } {
  * @param index Index of the object to read
  * @returns Contents of the object
  */
-function readPackFile(path: string, index: number) {
+function readPackFile(path: string, index: number): string {
   const header = readFile(path, 0, 8);
   assert(header.subarray(0, 4).toString() === "PACK");
 
