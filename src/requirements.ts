@@ -5,8 +5,9 @@ SPDX-License-Identifier: MIT
 SPDX-License-Identifier: CC-BY-3.0
 */
 
-import { IConventionalCommitElement, IConventionalCommitOptions, IRawConventionalCommit } from "./conventional_commit";
 import { ExpressiveMessage } from "@dev-build-deploy/diagnose-it";
+
+import { IConventionalCommitElement, IConventionalCommitOptions, IRawConventionalCommit } from "./conventional_commit";
 
 /**
  * Conventional Commit requirement
@@ -27,7 +28,7 @@ interface ICommitRequirement {
   validate(commit: IRawConventionalCommit, options?: IConventionalCommitOptions): ExpressiveMessage[];
 }
 
-function highlightString(str: string, substring: string | string[]) {
+function highlightString(str: string, substring: string | string[]): string {
   const HIGHLIGHT = "\x1b[1;36m";
   const RESET = "\x1b[0m\x1b[1m";
 
@@ -70,7 +71,7 @@ class CC01 implements ICommitRequirement {
     "Commits MUST be prefixed with a type, which consists of a noun, feat, fix, etc., followed by the OPTIONAL scope, OPTIONAL !, and REQUIRED terminal colon and space.";
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  validate(commit: IRawConventionalCommit, _options?: IConventionalCommitOptions) {
+  validate(commit: IRawConventionalCommit, _options?: IConventionalCommitOptions): ExpressiveMessage[] {
     const errors: ExpressiveMessage[] = [];
 
     // MUST be prefixed with a type
