@@ -4,8 +4,8 @@ SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
 SPDX-License-Identifier: MIT
 SPDX-License-Identifier: CC-BY-3.0
 */
-
 import { DiagnosticsMessage, FixItHint } from "@dev-build-deploy/diagnose-it";
+import chalk from "chalk";
 
 import { IConventionalCommitElement, IConventionalCommitOptions, IRawConventionalCommit } from "./conventional_commit";
 
@@ -29,15 +29,12 @@ interface ICommitRequirement {
 }
 
 function highlightString(str: string, substring: string | string[]): string {
-  const HIGHLIGHT = "\x1b[1;36m";
-  const RESET = "\x1b[0m\x1b[1m";
-
   // Ensure that we handle both single and multiple substrings equally
   if (!Array.isArray(substring)) substring = [substring];
 
   // Replace all instances of substring with a blue version
   let result = str;
-  substring.forEach(sub => (result = result.replace(sub, `${HIGHLIGHT}${sub}${RESET}`)));
+  substring.forEach(sub => (result = result.replace(sub, `${chalk.cyan(sub)}`)));
   return result;
 }
 
