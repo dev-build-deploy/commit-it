@@ -36,6 +36,8 @@ const validateRequirement = (message: string, expected: string, options?: IConve
           error.errors.map(e => e.message).join("\n")
         )}`
       );
+    } else {
+      error.errors.forEach(e => console.log(e.toString()));
     }
   }
 };

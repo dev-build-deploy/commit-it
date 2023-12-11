@@ -42,7 +42,7 @@ describe("Validate example code in README.md", () => {
     } catch (error: unknown) {
       if (!(error instanceof ConventionalCommitError)) throw error;
 
-      error.errors.forEach(e => console.log(e.message));
+      error.errors.forEach(e => console.log(e.toString()));
     }
   });
 });

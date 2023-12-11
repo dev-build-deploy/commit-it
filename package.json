@@ -43,6 +43,6 @@
     "lib/*"
   ],
   "dependencies": {
-    "@dev-build-deploy/diagnose-it": "<1.0.0"
+    "@dev-build-deploy/diagnose-it": "^1"
   }
 }
