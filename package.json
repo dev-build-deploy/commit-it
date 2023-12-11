@@ -43,6 +43,7 @@
     "lib/*"
   ],
   "dependencies": {
-    "@dev-build-deploy/diagnose-it": "^1"
+    "@dev-build-deploy/diagnose-it": "^1",
+    "chalk": "<5"
   }
 }
