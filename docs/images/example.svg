@@ -8,7 +8,6 @@
       .inv_background { background-color: #AAAAAA; }
       .ansi1 { font-weight: bold; }
       .ansi31 { color: #aa0000; }
-      .ansi32 { color: #00aa00; }
       .ansi36 { color: #00aaaa; }
     </style>
       <div xmlns="http://www.w3.org/1999/xhtml" style="color: #ffffff; background-color: #171B21; padding: 10px">
@@ -16,12 +15,12 @@
 <span class="ansi1">0ab1cd2ef:1:5: </span><span class="ansi1 ansi31">error:</span><span class="ansi1"> Commits MUST be prefixed with a type, which consists of a noun, feat, fix, etc., </span><span class="ansi1 ansi36">followed by the OPTIONAL scope</span><span class="ansi1">, OPTIONAL !, and REQUIRED terminal colon and space.</span>
 
   1 | feat (no noun): non-compliant conventional commits message
-    |      <span class="ansi1 ansi32">^--------</span>
+    |      <span class="ansi1 ansi31">~~~~~~~~~</span>
 
 <span class="ansi1">0ab1cd2ef:1:5: </span><span class="ansi1 ansi31">error:</span><span class="ansi1"> A scope MAY be provided after a type. </span><span class="ansi1 ansi36">A scope MUST consist of a noun</span><span class="ansi1"> describing a section of the codebase surrounded by parenthesis, e.g., fix(parser):</span>
 
   1 | feat (no noun): non-compliant conventional commits message
-    |      <span class="ansi1 ansi32">^--------</span>
+    |      <span class="ansi1 ansi31">~~~~~~~~~</span>
 </pre>
       </div>
     </foreignObject>
