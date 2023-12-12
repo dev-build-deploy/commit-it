@@ -51,7 +51,6 @@ export interface IRawConventionalCommit {
   scope: IConventionalCommitElement;
   breaking: IConventionalCommitElement;
   seperator: IConventionalCommitElement;
-  spacing: IConventionalCommitElement;
   description: IConventionalCommitElement;
   body: IConventionalCommitElement;
 }
@@ -143,7 +142,7 @@ export function isConventionalCommit(commit: ICommit | IConventionalCommit): boo
  */
 export function getConventionalCommit(commit: ICommit, options?: IConventionalCommitOptions): IConventionalCommit {
   const ConventionalCommitRegex = new RegExp(
-    /^(?<type>[^(!:]*)(?<scope>\([^)]*\))?(?<breaking>\s*!)?(?<separator>\s*:)?(?<spacing>\s*)(?<subject>.*)?$/
+    /^(?<type>[^(!:]*)(?<scope>\([^)]*\)\s*)?(?<breaking>!\s*)?(?<separator>:\s*)?(?<subject>.*)?$/
   );
 
   const match = ConventionalCommitRegex.exec(commit.subject);
@@ -153,7 +152,6 @@ export function getConventionalCommit(commit: ICommit, options?: IConventionalCo
     scope: { index: 1, value: match?.groups?.scope },
     breaking: { index: 1, value: match?.groups?.breaking },
     seperator: { index: 1, value: match?.groups?.separator },
-    spacing: { index: 1, value: match?.groups?.spacing },
     description: { index: 1, value: match?.groups?.subject },
     body: { index: 1, value: commit.body },
   };
@@ -162,8 +160,7 @@ export function getConventionalCommit(commit: ICommit, options?: IConventionalCo
     commit.scope.index = commit.type.index + (commit.type.value?.length ?? 0);
     commit.breaking.index = commit.scope.index + (commit.scope.value?.length ?? 0);
     commit.seperator.index = commit.breaking.index + (commit.breaking.value?.length ?? 0);
-    commit.spacing.index = commit.seperator.index + (commit.seperator.value?.length ?? 0);
-    commit.description.index = commit.spacing.index + (commit.spacing.value?.length ?? 0);
+    commit.description.index = commit.seperator.index + (commit.seperator.value?.length ?? 0);
     return commit;
   }
 

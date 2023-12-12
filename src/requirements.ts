@@ -28,6 +28,10 @@ interface ICommitRequirement {
   validate(commit: IRawConventionalCommit, options?: IConventionalCommitOptions): DiagnosticsMessage[];
 }
 
+function isNoun(str: string): boolean {
+  return !str.trim().includes(" ") && !/[^a-z]/i.test(str.trim());
+}
+
 function highlightString(str: string, substring: string | string[]): string {
   // Ensure that we handle both single and multiple substrings equally
   if (!Array.isArray(substring)) substring = [substring];
@@ -42,14 +46,29 @@ function createError(
   commit: IRawConventionalCommit,
   description: string,
   highlight: string | string[],
-  type: "type" | "scope" | "breaking" | "seperator" | "spacing" | "description"
+  type: keyof IRawConventionalCommit,
+  whitespace = false
 ): DiagnosticsMessage {
-  const data = commit[type.toString() as keyof IRawConventionalCommit] as IConventionalCommitElement;
+  const element = commit[type] as IConventionalCommitElement;
+  let hintIndex = element.index;
+  let hintLength = element.value?.trimEnd().length ?? 1;
+
+  if (whitespace) {
+    let prevElement: IConventionalCommitElement | undefined = undefined;
+    for (const [_key, value] of Object.entries(commit)) {
+      if (value.index > (prevElement?.index ?? 0) && value.index < element.index) {
+        prevElement = value;
+      }
+    }
+
+    hintIndex = prevElement ? prevElement.index + (prevElement.value?.trimEnd().length ?? 1) : 1;
+    hintLength = (prevElement?.value?.length ?? 1) - (prevElement?.value?.trimEnd().length ?? 1);
+  }
 
   return DiagnosticsMessage.createError(commit.commit.hash, {
     text: highlightString(description, highlight),
     linenumber: 1,
-    column: data.index,
+    column: hintIndex,
   })
     .setContext(
       1,
@@ -57,7 +76,7 @@ function createError(
         ? [commit.commit.subject, "", ...commit.commit.body.split("\n")]
         : [commit.commit.subject]
     )
-    .addFixitHint(FixItHint.create({ index: data.index, length: data.value?.length ?? 1 }));
+    .addFixitHint(FixItHint.create({ index: hintIndex, length: hintLength === 0 ? 1 : hintLength }));
 }
 
 /**
@@ -69,44 +88,47 @@ class CC01 implements ICommitRequirement {
   description =
     "Commits MUST be prefixed with a type, which consists of a noun, feat, fix, etc., followed by the OPTIONAL scope, OPTIONAL !, and REQUIRED terminal colon and space.";
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   validate(commit: IRawConventionalCommit, _options?: IConventionalCommitOptions): DiagnosticsMessage[] {
     const errors: DiagnosticsMessage[] = [];
 
     // MUST be prefixed with a type
     if (!commit.type.value || commit.type.value.trim().length === 0) {
-      errors.push(createError(commit, this.description, "MUST be prefixed with a type", "type"));
+      // Validated with EC-02
     } else {
       // Ensure that we have a noun
-      if (commit.type.value.trim().includes(" ") || /[^a-z]/i.test(commit.type.value.trim()))
+      if (!isNoun(commit.type.value))
         errors.push(createError(commit, this.description, "which consists of a noun", "type"));
       // Validate for spacing after the type
       if (commit.type.value.trim() !== commit.type.value) {
         if (commit.scope.value)
-          errors.push(createError(commit, this.description, "followed by the OPTIONAL scope", "scope"));
+          errors.push(createError(commit, this.description, "followed by the OPTIONAL scope", "scope", true));
         else if (commit.breaking.value)
-          errors.push(createError(commit, this.description, ["followed by the", "OPTIONAL !"], "breaking"));
+          errors.push(createError(commit, this.description, ["followed by the", "OPTIONAL !"], "breaking", true));
         else
           errors.push(
-            createError(commit, this.description, ["followed by the", "REQUIRED terminal colon"], "seperator")
+            createError(commit, this.description, ["followed by the", "REQUIRED terminal colon"], "seperator", true)
           );
       }
 
       // Validate for spacing after the scope, breaking and seperator
-      if (commit.scope.value && commit.scope.value.trim() !== commit.scope.value)
-        errors.push(createError(commit, this.description, "followed by the OPTIONAL scope", "scope"));
+      if (commit.scope.value && commit.scope.value.trim() !== commit.scope.value) {
+        if (commit.breaking.value)
+          errors.push(createError(commit, this.description, ["followed by the", "OPTIONAL !"], "breaking", true));
+        else
+          errors.push(
+            createError(commit, this.description, ["followed by the", "REQUIRED terminal colon"], "seperator", true)
+          );
+      }
+
       if (commit.breaking.value && commit.breaking.value.trim() !== commit.breaking.value)
-        errors.push(createError(commit, this.description, ["followed by the", "OPTIONAL !"], "breaking"));
-      if (commit.seperator.value && commit.seperator.value.trim() !== commit.seperator.value)
-        errors.push(createError(commit, this.description, ["followed by the", "REQUIRED terminal colon"], "seperator"));
+        errors.push(
+          createError(commit, this.description, ["followed by the", "REQUIRED terminal colon"], "seperator", true)
+        );
     }
 
     // MUST have a terminal colon
     if (!commit.seperator.value)
       errors.push(createError(commit, this.description, ["followed by the", "REQUIRED terminal colon"], "seperator"));
-    // MUST have a space after the terminal colon
-    else if (!commit.spacing.value || commit.spacing.value.length !== 1)
-      errors.push(createError(commit, this.description, ["followed by the", "REQUIRED", "space"], "spacing"));
 
     return errors;
   }
@@ -121,15 +143,13 @@ class CC04 implements ICommitRequirement {
   description =
     "A scope MAY be provided after a type. A scope MUST consist of a noun describing a section of the codebase surrounded by parenthesis, e.g., fix(parser):";
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   validate(commit: IRawConventionalCommit, _options?: IConventionalCommitOptions): DiagnosticsMessage[] {
     const errors: DiagnosticsMessage[] = [];
 
     if (
       commit.scope.value &&
-      (commit.scope.value.includes(" ") ||
-        commit.scope.value === "()" ||
-        /[^a-z]/i.test(commit.scope.value.substring(1, commit.scope.value.length - 1)))
+      (commit.scope.value === "()" ||
+        !isNoun(commit.scope.value.trimEnd().substring(1, commit.scope.value.trimEnd().length - 1)))
     ) {
       errors.push(createError(commit, this.description, "A scope MUST consist of a noun", "scope"));
     }
@@ -148,18 +168,21 @@ class CC05 implements ICommitRequirement {
   description =
     "A description MUST immediately follow the colon and space after the type/scope prefix. The description is a short summary of the code changes, e.g., fix: array parsing issue when multiple spaces were contained in string.";
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   validate(commit: IRawConventionalCommit, _options?: IConventionalCommitOptions): DiagnosticsMessage[] {
     const errors: DiagnosticsMessage[] = [];
 
     if (!commit.seperator.value) return errors;
-    if (!commit.spacing.value || commit.spacing.value.length > 1 || !commit.description.value)
+    if (
+      commit.description.value === undefined ||
+      commit.seperator.value.length - commit.seperator.value.trim().length !== 1
+    )
       errors.push(
         createError(
           commit,
           this.description,
           "A description MUST immediately follow the colon and space",
-          "description"
+          "description",
+          true
         )
       );
 
@@ -209,7 +232,16 @@ class EC02 implements ICommitRequirement {
       ", "
     )}).`;
 
-    if (commit.type.value !== undefined && expectedTypes.includes(commit.type.value)) return [];
+    if (
+      commit.type.value === undefined ||
+      !isNoun(commit.type.value) ||
+      expectedTypes.includes(commit.type.value.trimEnd())
+    )
+      return [];
+
+    if (commit.type.value.trim().length === 0) {
+      return [createError(commit, this.description, "prefixed with a type", "type")];
+    }
 
     return [
       createError(
