@@ -57,7 +57,7 @@ function createError(
         ? [commit.commit.subject, "", ...commit.commit.body.split("\n")]
         : [commit.commit.subject]
     )
-    .addFixitHint(FixItHint.create({ index: data.index, length: data.value?.length || 1 }));
+    .addFixitHint(FixItHint.create({ index: data.index, length: data.value?.length ?? 1 }));
 }
 
 /**
@@ -168,50 +168,54 @@ class CC05 implements ICommitRequirement {
 }
 
 /**
- * A scope MAY be provided after a type. A scope MUST consist of one of the configured values (feat, fix, ...) surrounded by parenthesis
+ * A scope MAY be provided after a type. A scope MUST consist of one of the configured values (...) surrounded by parenthesis
  */
 class EC01 implements ICommitRequirement {
   id = "EC-01";
   description =
-    "A scope MAY be provided after a type. A scope MUST consist of one of the configured values (feat, fix, ...) surrounded by parenthesis";
+    "A scope MAY be provided after a type. A scope MUST consist of one of the configured values (...) surrounded by parenthesis";
 
   validate(commit: IRawConventionalCommit, options?: IConventionalCommitOptions): DiagnosticsMessage[] {
-    this.description = `A scope MAY be provided after a type. A scope MUST consist of one of the configured values (${options?.scopes?.join(
+    const uniqueScopeList = Array.from(new Set<string>(options?.scopes ?? []));
+    if (uniqueScopeList.length === 0) return [];
+
+    if (commit.scope.value === undefined || uniqueScopeList.includes(commit.scope.value.replace(/[()]+/g, "")))
+      return [];
+
+    this.description = `A scope MAY be provided after a type. A scope MUST consist of one of the configured values (${uniqueScopeList.join(
       ", "
     )}) surrounded by parenthesis`;
 
-    if (options === undefined || options.scopes === undefined || options.scopes.length === 0) return [];
-    if (commit.scope.value === undefined || options.scopes.includes(commit.scope.value.replace(/[()]+/g, "")))
-      return [];
-
     return [
-      createError(commit, this.description, ["A scope MUST consist of", `(${options?.scopes?.join(", ")})`], "scope"),
+      createError(commit, this.description, ["A scope MUST consist of", `(${uniqueScopeList.join(", ")})`], "scope"),
     ];
   }
 }
 
 /**
- * Commits MUST be prefixed with a type, which consists of one of the configured values (...)
+ * Commits MUST be prefixed with a type, which consists of one of the configured values (feat, fix, ...)
  */
 class EC02 implements ICommitRequirement {
   id = "EC-02";
-  description = "Commits MUST be prefixed with a type, which consists of one of the configured values (...)";
+  description = "Commits MUST be prefixed with a type, which consists of one of the configured values (feat, fix, ...)";
 
   validate(commit: IRawConventionalCommit, options?: IConventionalCommitOptions): DiagnosticsMessage[] {
-    this.description = `Commits MUST be prefixed with a type, which consists of one of the configured values (${[
-      "feat",
-      "fix",
-      ...(options?.types ?? []),
-    ].join(", ")}).`;
+    const uniqueAddedTypes = new Set<string>(options?.types ?? []);
+    if (uniqueAddedTypes.has("feat")) uniqueAddedTypes.delete("feat");
+    if (uniqueAddedTypes.has("fix")) uniqueAddedTypes.delete("fix");
+    const expectedTypes = ["feat", "fix", ...Array.from(uniqueAddedTypes)];
 
-    if (options === undefined || options.types === undefined || options.types.length === 0) return [];
-    if (commit.type.value !== undefined && ["feat", "fix", ...options.types].includes(commit.type.value)) return [];
+    this.description = `Commits MUST be prefixed with a type, which consists of one of the configured values (${expectedTypes.join(
+      ", "
+    )}).`;
+
+    if (commit.type.value !== undefined && expectedTypes.includes(commit.type.value)) return [];
 
     return [
       createError(
         commit,
         this.description,
-        ["prefixed with a type, which consists of", `(${["feat", "fix", ...(options?.types ?? [])].join(", ")})`],
+        ["prefixed with a type, which consists of", `(${expectedTypes.join(", ")})`],
         "type"
       ),
     ];

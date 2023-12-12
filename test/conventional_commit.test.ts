@@ -33,7 +33,7 @@ const validateRequirement = (message: string, expected: string, options?: IConve
     if (!found) {
       throw new Error(
         `Expected error message '${expected}' not found in: ${removeColors(
-          error.errors.map(e => e.message).join("\n")
+          error.errors.map(e => e.message.text).join("\n")
         )}`
       );
     } else {
@@ -51,13 +51,6 @@ describe("Conventional Commits specification", () => {
       "feat: add new feature",
       "fix: fix bug",
       "fix!: fix bug with breaking change",
-      "docs: update documentation",
-      "style: update style",
-      "style(format): update style with scope",
-      "refactor: refactor code",
-      "test: update tests",
-      "test(unit)!: update unit tests which leads to a breaking change",
-      "chore: update build scripts",
       "feat(login): add support google oauth (#12)",
     ]) {
       expect(() => {
@@ -162,7 +155,7 @@ describe("Extended Conventional Commits specification", () => {
         message,
         "A scope MAY be provided after a type. A scope MUST consist of one of the configured values (action, cli) surrounded by parenthesis",
         {
-          scopes: ["action", "cli"],
+          scopes: ["action", "action", "cli", "cli"],
         }
       );
     }
@@ -174,7 +167,8 @@ describe("Extended Conventional Commits specification", () => {
         message,
         "Commits MUST be prefixed with a type, which consists of one of the configured values (feat, fix, build, perf)",
         {
-          types: ["build", "perf"],
+          scopes: ["scope"],
+          types: ["feat", "build", "build", "perf", "perf", "fix"],
         }
       );
     }
