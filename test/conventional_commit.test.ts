@@ -48,6 +48,7 @@ describe("Valid Conventional Commit subjects", () => {
     { message: "fix: fix bug" },
     { message: "fix!: fix bug with breaking change" },
     { message: "feat(login): add support google oauth (#12)" },
+    { message: "FEAT: capitalized" },
   ];
 
   it.each(tests)("$message", test => {
@@ -135,6 +136,21 @@ describe("CC-06", () => {
   });
 });
 
+describe("CC-15", () => {
+  const tests = [
+    { message: "feat: add new feature\n\nBreAking-ChaNGe: This is incorrectly formatted!" },
+    { message: "feat: add new feature\n\nbreaking change: This is incorrectly formatted!" },
+    { message: "feat: add new feature\n\nbreaking-change: This is incorrectly formatted!" },
+  ];
+
+  it.each(tests)("$message", test => {
+    validateRequirement(
+      test.message,
+      "The units of information that make up Conventional Commits MUST NOT be treated as case sensitive by implementors, with the exception of BREAKING CHANGE which MUST be uppercase."
+    );
+  });
+});
+
 describe("EC-01", () => {
   const tests = [
     { message: "feat(wrong): unknown scope" },
@@ -203,6 +219,7 @@ describe("Breaking Change", () => {
     expect(
       commitIt.getConventionalCommit({
         hash: "01ab2cd3",
+        raw: "feat: add new feature without breaking change",
         subject: "feat: add new feature without breaking change",
       }).breaking
     ).toBe(false);
@@ -210,6 +227,7 @@ describe("Breaking Change", () => {
     expect(
       commitIt.getConventionalCommit({
         hash: "01ab2cd3",
+        raw: "feat!: add new feature with breaking change",
         subject: "feat!: add new feature with breaking change",
       }).breaking
     ).toBe(true);
@@ -217,6 +235,9 @@ describe("Breaking Change", () => {
     expect(
       commitIt.getConventionalCommit({
         hash: "01ab2cd3",
+        raw: `feat!: add new feature with breaking change in footer
+
+BREAKING CHANGE: this is a breaking change`,
         subject: "feat: add new feature with breaking change in footer",
         footer: {
           "BREAKING CHANGE": "this is a breaking change",
@@ -227,6 +248,9 @@ describe("Breaking Change", () => {
     expect(
       commitIt.getConventionalCommit({
         hash: "01ab2cd3",
+        raw: `feat!: add new feature with breaking change in footer
+
+BREAKING-CHANGE: this is a breaking change`,
         subject: "feat: add new feature with breaking change in footer",
         footer: {
           "BREAKING-CHANGE": "this is a breaking change",

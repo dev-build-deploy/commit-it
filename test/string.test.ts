@@ -14,6 +14,7 @@ describe("Parse commit messages", () => {
         message: "Example commit message without body or footer",
       })
     ).toStrictEqual({
+      raw: `Example commit message without body or footer`,
       hash: "0a0b0c0d",
       author: {
         name: "Jane Doe",
@@ -34,6 +35,7 @@ describe("Parse commit messages", () => {
         message: "Example commit message without body or footer",
       })
     ).toStrictEqual({
+      raw: `Example commit message without body or footer`,
       hash: "0a0b0c0d",
       author: undefined,
       committer: {
@@ -50,6 +52,7 @@ describe("Parse commit messages", () => {
     expect(
       commitIt.getCommit({ hash: "0a0b0c0d", message: "Example commit message without body or footer" })
     ).toStrictEqual({
+      raw: `Example commit message without body or footer`,
       hash: "0a0b0c0d",
       author: undefined,
       committer: undefined,
@@ -61,6 +64,7 @@ describe("Parse commit messages", () => {
     expect(
       commitIt.getCommit({ hash: "0a0b0c0d", message: `Example commit message without body or footer, with newline\n` })
     ).toStrictEqual({
+      raw: `Example commit message without body or footer, with newline\n`,
       hash: "0a0b0c0d",
       author: undefined,
       committer: undefined,
@@ -75,6 +79,7 @@ describe("Parse commit messages", () => {
         message: `Example commit message without body or footer, with newlines\n\n`,
       })
     ).toStrictEqual({
+      raw: `Example commit message without body or footer, with newlines\n\n`,
       hash: "0a0b0c0d",
       author: undefined,
       committer: undefined,
@@ -95,6 +100,7 @@ with multiple lines
 
 and paragraphs`;
     expect(commitIt.getCommit({ hash: "0a0b0c0d", message: singleBody })).toStrictEqual({
+      raw: singleBody,
       hash: "0a0b0c0d",
       author: undefined,
       committer: undefined,
@@ -104,6 +110,7 @@ and paragraphs`;
     });
 
     expect(commitIt.getCommit({ hash: "0a0b0c0d", message: multiBody })).toStrictEqual({
+      raw: multiBody,
       hash: "0a0b0c0d",
       author: undefined,
       committer: undefined,
@@ -129,6 +136,7 @@ BREAKING-CHANGE: This is a breaking change
  using multiple lines as value`;
 
     expect(commitIt.getCommit({ hash: "0a0b0c0d", message: singleFooter })).toStrictEqual({
+      raw: singleFooter,
       hash: "0a0b0c0d",
       author: undefined,
       committer: undefined,
@@ -140,6 +148,7 @@ BREAKING-CHANGE: This is a breaking change
     });
 
     expect(commitIt.getCommit({ hash: "0a0b0c0d", message: multiFooter })).toStrictEqual({
+      raw: multiFooter,
       hash: "0a0b0c0d",
       author: undefined,
       committer: undefined,
@@ -152,6 +161,7 @@ BREAKING-CHANGE: This is a breaking change
     });
 
     expect(commitIt.getCommit({ hash: "0a0b0c0d", message: paragraphFooter })).toStrictEqual({
+      raw: paragraphFooter,
       hash: "0a0b0c0d",
       author: undefined,
       committer: undefined,
@@ -180,6 +190,7 @@ BREAKING-CHANGE: This is a breaking change
 Implements #1234`;
 
     expect(commitIt.getCommit({ hash: "0a0b0c0d", message: fullCommit })).toStrictEqual({
+      raw: fullCommit,
       hash: "0a0b0c0d",
       author: undefined,
       committer: undefined,

@@ -19,6 +19,7 @@ CommitIt validates against the following sets of specifications:
 | `CC-04` | A scope MAY be provided after a type. A scope MUST consist of a noun describing a section of the codebase surrounded by parenthesis, e.g., `fix(parser):` |
 | `CC-05` | A description MUST immediately follow the colon and space after the type/scope prefix. The description is a short summary of the code changes, e.g., _fix: array parsing issue when multiple spaces were contained in string._ |
 | `CC-06` | A longer commit body MAY be provided after the short description, providing additional contextual information about the code changes. The body MUST begin one blank line after the description. |
+| `CC-15` | The units of information that make up Conventional Commits MUST NOT be treated as case sensitive by implementors, with the exception of BREAKING CHANGE which MUST be uppercase. |
 
 > **NOTE**: Above _3_ requirements are covered by _12_ distinct validation rules
 
