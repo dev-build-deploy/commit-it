@@ -65,6 +65,8 @@ export interface ICommit {
   footer?: Record<string, string>;
 }
 
+const TRAILER_REGEX = /^((BREAKING CHANGE:)|([\w-]+(:| #))|([ \t]+)\w*)/;
+
 /**
  * Returns a dictionary containing key-value pairs extracted from the footer of the provided commit message.
  * The key must either be:
@@ -81,7 +83,7 @@ function parseCommitFooter(footer: string): Record<string, string> | undefined {
 
   for (let lineNr = 0; lineNr < footerLines.length; lineNr++) {
     const line = footerLines[lineNr];
-    const match = /^((BREAKING CHANGE:)|([\w-]+(:| #))|([ \t]+)\w)/.exec(line);
+    const match = TRAILER_REGEX.exec(line);
     if (match === null) continue;
 
     let key = match[1].replace(/:$/, "");
@@ -92,7 +94,10 @@ function parseCommitFooter(footer: string): Record<string, string> | undefined {
     }
 
     // Check if the value continues on the next line
-    while (lineNr + 1 < footerLines.length && footerLines[lineNr + 1].startsWith(" ")) {
+    while (
+      lineNr + 1 < footerLines.length &&
+      (/^\s/.test(footerLines[lineNr + 1]) || footerLines[lineNr + 1].length === 0)
+    ) {
       lineNr++;
       value += "\n" + footerLines[lineNr].trim();
     }
@@ -117,7 +122,7 @@ export function parseCommitMessage(message: string): {
 } {
   const isTrailerOnly = (message: string): boolean =>
     message.split(/[\r\n]+/).every(line => {
-      const match = /^((BREAKING CHANGE:)|([\w-]+(:| #))|([ \t]+)\w)/.exec(line);
+      const match = TRAILER_REGEX.exec(line);
       return match !== null;
     });
 

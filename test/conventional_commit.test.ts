@@ -54,7 +54,13 @@ describe("Valid Conventional Commit subjects", () => {
     expect(() => {
       const commit = commitIt.getCommit({ hash: "01ab2cd3", message: test.message });
       expect(commitIt.isConventionalCommit(commit)).toBe(false);
-      expect(commitIt.isConventionalCommit(commitIt.getConventionalCommit(commit))).toBe(true);
+      expect(
+        commitIt.isConventionalCommit(
+          commitIt.getConventionalCommit(commit, {
+            scopes: ["login"],
+          })
+        )
+      ).toBe(true);
     }).not.toThrow();
   });
 });
@@ -118,7 +124,12 @@ describe("CC-05", () => {
 });
 
 describe("EC-01", () => {
-  const tests = [{ message: "feat(wrong): unknown scope" }];
+  const tests = [
+    { message: "feat(wrong): unknown scope" },
+    { message: "feat (wrong): spacing as prefix" },
+    { message: "feat(wrong) : spacing as suffix" },
+    { message: "feat ( wrong ) : spacing everywhere" },
+  ];
 
   it.each(tests)("$message", test => {
     validateRequirement(
