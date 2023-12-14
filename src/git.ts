@@ -16,6 +16,7 @@ type NameAndDateType = { name: string; date: Date };
 /** @internal */
 type GitCommitType = {
   hash: string;
+  raw: string;
   author?: NameAndDateType;
   committer?: NameAndDateType;
   subject: string;
@@ -73,18 +74,18 @@ function getValueFromKey(commit: string, key: string): string | undefined {
 function parseCommitMessage(commit: string, hash: string): GitCommitType {
   const author = extractNameAndDate(getValueFromKey(commit, "author"));
   const committer = extractNameAndDate(getValueFromKey(commit, "committer"));
+  const raw = commit
+    .split(/^[\r\n]+/m)
+    .splice(1)
+    .join("\n")
+    .trim();
 
   return {
+    raw,
     hash: hash,
     author: author,
     committer: committer,
-    ...ccommit.parseCommitMessage(
-      commit
-        .split(/^[\r\n]+/m)
-        .splice(1)
-        .join("\n")
-        .trim()
-    ),
+    ...ccommit.parseCommitMessage(raw),
   };
 }
 

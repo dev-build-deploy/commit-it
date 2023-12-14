@@ -60,12 +60,13 @@ export interface ICommit {
   author?: { name: string; date: Date };
   committer?: { name: string; date: Date };
   hash: string;
+  raw: string;
   subject: string;
   body?: string;
   footer?: Record<string, string>;
 }
 
-const TRAILER_REGEX = /^((BREAKING CHANGE:)|([\w-]+(:| #))|([ \t]+)\w*)/;
+const TRAILER_REGEX = /^((BREAKING CHANGE:)|([\w-]+(:| #))|([ \t]+)\w*)/i;
 
 /**
  * Returns a dictionary containing key-value pairs extracted from the footer of the provided commit message.
@@ -189,6 +190,7 @@ export function getCommit(
       ...parseCommitMessage(stringOptions.message),
       author: stringOptions.author,
       committer: stringOptions.committer,
+      raw: stringOptions.message,
     };
     // GitHub data source
   } else if ("owner" in options) {
@@ -198,6 +200,7 @@ export function getCommit(
     commit = {
       hash: githubOptions.hash,
       subject: "",
+      raw: "",
     };
     // Git data source
   } else {

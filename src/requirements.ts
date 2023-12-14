@@ -219,7 +219,9 @@ class CC05 implements ICommitRequirement {
 }
 
 /**
- * A longer commit body MAY be provided after the short description, providing additional contextual information about the code changes. The body MUST begin one blank line after the description.
+ * A longer commit body MAY be provided after the short description, providing
+ * additional contextual information about the code changes. The body MUST begin one
+ * blank line after the description.
  */
 class CC06 implements ICommitRequirement {
   id = "CC-06";
@@ -244,6 +246,40 @@ class CC06 implements ICommitRequirement {
           .setContext(1, lines)
           .addFixitHint(FixItHint.createRemoval({ index: 1, length: lines[1].length })),
       ];
+    }
+
+    return errors;
+  }
+}
+
+/**
+ * The units of information that make up Conventional Commits MUST NOT be treated as case
+ * sensitive by implementors, with the exception of BREAKING CHANGE which MUST be uppercase.
+ */
+class CC15 implements ICommitRequirement {
+  id = "CC-15";
+  description =
+    "The units of information that make up Conventional Commits MUST NOT be treated as case sensitive by implementors, with the exception of BREAKING CHANGE which MUST be uppercase.";
+
+  validate(commit: IRawConventionalCommit, _options?: IConventionalCommitOptions): DiagnosticsMessage[] {
+    const errors: DiagnosticsMessage[] = [];
+    const footerElements = getFooterElementsFromParagraph(commit.commit.raw);
+    if (footerElements === undefined) return errors;
+
+    for (const element of footerElements) {
+      if (["BREAKING CHANGE", "BREAKING-CHANGE"].includes(element.key.toUpperCase())) {
+        if (element.key !== element.key.toUpperCase()) {
+          errors.push(
+            DiagnosticsMessage.createError(commit.commit.hash, {
+              text: highlightString(this.description, "BREAKING CHANGE MUST be uppercase"),
+              linenumber: element.lineNumber,
+              column: 1,
+            })
+              .setContext(element.lineNumber, commit.commit.raw.split(/\r?\n/)[element.lineNumber - 1])
+              .addFixitHint(FixItHint.create({ index: 1, length: element.key.length }))
+          );
+        }
+      }
     }
 
     return errors;
@@ -303,7 +339,7 @@ class EC02 implements ICommitRequirement {
     if (
       commit.type.value === undefined ||
       !isNoun(commit.type.value) ||
-      expectedTypes.includes(commit.type.value.trimEnd())
+      expectedTypes.includes(commit.type.value.toLowerCase().trimEnd())
     ) {
       return [];
     }
@@ -366,6 +402,7 @@ export const commitRules: ICommitRequirement[] = [
   new CC04(),
   new CC05(),
   new CC06(),
+  new CC15(),
   new EC01(),
   new EC02(),
   new WA01(),

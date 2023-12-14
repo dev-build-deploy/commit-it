@@ -14,6 +14,13 @@ describe("Get Commit Message from git", () => {
   test("Hash from Local Repository", () => {
     const commit = commitIt.getCommit({ hash: "4b1c9f2e8d113892fb7bfc388606c82ce0572b95" });
     expect(commit).toStrictEqual({
+      raw: `feat: add support to retrieve commits from a git source by SHA
+
+This commit introduces custom parsing of the objects and pack files
+in .git/objects. Rationale: remove any need for external dependencies
+(albeit packages or tools).
+
+Calling \`getCommitMessage(...)\` will return a standard ICommit object`,
       author: {
         name: "Kevin de Jong <monkaii@hotmail.com>",
         date: new Date("2023-06-16T15:01:30.000Z"),
@@ -36,6 +43,7 @@ Calling \`getCommitMessage(...)\` will return a standard ICommit object`,
   test("Hash from Pack file", () => {
     const commit = commitIt.getCommit({ hash: "78e505dc465c3c39a179f6d24970c2f0f0dccad9" });
     expect(commit).toStrictEqual({
+      raw: `Initial commit`,
       author: {
         name: "Kevin de Jong <134343960+Kevin-de-Jong@users.noreply.github.com>",
         date: new Date("2023-06-16T14:28:58.000Z"),
