@@ -7,6 +7,7 @@ SPDX-License-Identifier: CC-BY-3.0
 import { DiagnosticsMessage, FixItHint } from "@dev-build-deploy/diagnose-it";
 import chalk from "chalk";
 
+import { getFooterElementsFromParagraph } from "./commit";
 import { IConventionalCommitElement, IConventionalCommitOptions, IRawConventionalCommit } from "./conventional_commit";
 
 /**
@@ -322,6 +323,43 @@ class EC02 implements ICommitRequirement {
   }
 }
 
+/**
+ * A `BREAKING CHANGE` git-trailer has been found in the body of the commit message and will be ignored as it MUST be included in the footer.
+ */
+class WA01 implements ICommitRequirement {
+  id = "WA-01";
+  description =
+    "A `BREAKING CHANGE` git-trailer has been found in the body of the commit message and will be ignored as it MUST be included in the footer.";
+
+  validate(commit: IRawConventionalCommit, _options?: IConventionalCommitOptions): DiagnosticsMessage[] {
+    const errors: DiagnosticsMessage[] = [];
+
+    if (commit.commit.body === undefined) return errors;
+
+    const elements = getFooterElementsFromParagraph(commit.commit.body);
+    if (elements === undefined) return errors;
+
+    for (const element of elements) {
+      if (element.key === "BREAKING CHANGE" || element.key === "BREAKING-CHANGE") {
+        errors.push(
+          DiagnosticsMessage.createWarning(commit.commit.hash, {
+            text: highlightString(
+              `A \`${element.key}\` git-trailer has been found in the body of the commit message and will be ignored as it MUST be included in the footer.`,
+              [element.key, "will be ignored as it MUST be included in the footer"]
+            ),
+            linenumber: commit.commit.subject.split(/\r?\n/).length + element.lineNumber,
+            column: 1,
+          })
+            .setContext(commit.commit.subject.split(/\r?\n/).length + 1, commit.commit.body.split(/\r?\n/))
+            .addFixitHint(FixItHint.create({ index: 1, length: element.key.length }))
+        );
+      }
+    }
+
+    return errors;
+  }
+}
+
 /** @internal */
 export const commitRules: ICommitRequirement[] = [
   new CC01(),
@@ -330,4 +368,5 @@ export const commitRules: ICommitRequirement[] = [
   new CC06(),
   new EC01(),
   new EC02(),
+  new WA01(),
 ];

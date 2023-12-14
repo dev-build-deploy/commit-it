@@ -42,3 +42,11 @@ const conventionalOptions = {
 
 const conventionalCommit = getConventionalCommit(gitCommit, conventionalOptions);
 ```
+
+## Additional warnings
+
+In order to warn users about edge cases, several warning messages have been introduced to prevent unwanted behavior:
+
+| Identifier | Description |
+| --- | --- |
+| `WA-01` | A `BREAKING CHANGE` git-trailer has been found in the body of the commit message and will be ignored as it MUST be included in the footer. |
