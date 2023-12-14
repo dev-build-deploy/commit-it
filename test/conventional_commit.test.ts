@@ -176,6 +176,28 @@ describe("EC-02", () => {
   });
 });
 
+describe("WA-01", () => {
+  const tests = [
+    { message: "feat: add a new feature\n\nBREAKING CHANGE: this is a breaking change\n\nImplements #123" },
+    { message: "feat: add a new feature\n\nBREAKING-CHANGE: this is a breaking change\n\nImplements #123" },
+    {
+      message:
+        "feat: add a new feature\nwith a subject spanning multiple lines\n\nBREAKING-CHANGE: this is a breaking change\n\nImplements #123",
+    },
+    {
+      message:
+        "feat: add a new feature\nwith a subject spanning multiple lines\n\nLets add more lines in the body,\njust because we can\n\nco-authored-by: Bob the Builder\nBREAKING-CHANGE: this is a breaking change\n spanning two lines\n\nImplements #123!",
+    },
+  ];
+
+  it.each(tests)("$message", test => {
+    validateRequirement(
+      test.message,
+      "git-trailer has been found in the body of the commit message and will be ignored as it MUST be included in the footer."
+    );
+  });
+});
+
 describe("Breaking Change", () => {
   test("Has breaking change", () => {
     expect(

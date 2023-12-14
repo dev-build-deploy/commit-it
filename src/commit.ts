@@ -76,10 +76,14 @@ const TRAILER_REGEX = /^((BREAKING CHANGE:)|([\w-]+(:| #))|([ \t]+)\w*)/;
  * The value is either:
  * - the remainder of the line
  * - the remainder of the line + anything that follows on the next lines which is indented by at least one space
+ *
+ * @internal
  */
-function parseCommitFooter(footer: string): Record<string, string> | undefined {
-  const footerLines = footer.split(/[\r\n]+/);
-  const result: Record<string, string> = {};
+export function getFooterElementsFromParagraph(
+  footer: string
+): { lineNumber: number; key: string; value: string }[] | undefined {
+  const footerLines = footer.split(/\r?\n/);
+  const result: { lineNumber: number; key: string; value: string }[] = [];
 
   for (let lineNr = 0; lineNr < footerLines.length; lineNr++) {
     const line = footerLines[lineNr];
@@ -93,6 +97,8 @@ function parseCommitFooter(footer: string): Record<string, string> | undefined {
       value = `#${value}`;
     }
 
+    const matchLine = lineNr;
+
     // Check if the value continues on the next line
     while (
       lineNr + 1 < footerLines.length &&
@@ -101,8 +107,11 @@ function parseCommitFooter(footer: string): Record<string, string> | undefined {
       lineNr++;
       value += "\n" + footerLines[lineNr].trim();
     }
-
-    result[key] = value;
+    result.push({
+      lineNumber: matchLine + 1,
+      key,
+      value,
+    });
   }
 
   return Object.keys(result).length > 0 ? result : undefined;
@@ -121,12 +130,12 @@ export function parseCommitMessage(message: string): {
   footer?: Record<string, string>;
 } {
   const isTrailerOnly = (message: string): boolean =>
-    message.split(/[\r\n]+/).every(line => {
+    message.split(/\r?\n/).every(line => {
       const match = TRAILER_REGEX.exec(line);
       return match !== null;
     });
 
-  const paragraphs = message.split(/^[\r\n]+/m);
+  const paragraphs = message.split(/^\r?\n/m);
   let footer: string | undefined = undefined;
   let body: string | undefined = undefined;
 
@@ -143,7 +152,10 @@ export function parseCommitMessage(message: string): {
   return {
     subject: paragraphs[0].trim(),
     body: body,
-    footer: parseCommitFooter(footer ?? ""),
+    footer: getFooterElementsFromParagraph(footer ?? "")?.reduce((acc, cur) => {
+      acc[cur.key] = cur.value;
+      return acc;
+    }, {} as Record<string, string>),
   };
 }
 
