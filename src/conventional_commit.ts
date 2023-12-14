@@ -145,7 +145,7 @@ export function getConventionalCommit(commit: ICommit, options?: IConventionalCo
     /^(?<type>[^(!:]*)(?<scope>\([^)]*\)\s*)?(?<breaking>!\s*)?(?<separator>:\s*)?(?<subject>.*)?$/
   );
 
-  const match = ConventionalCommitRegex.exec(commit.subject);
+  const match = ConventionalCommitRegex.exec(commit.subject.split(/\r?\n/)[0]);
   let conventionalCommit: IRawConventionalCommit = {
     commit: commit,
     type: { index: 1, value: match?.groups?.type },
