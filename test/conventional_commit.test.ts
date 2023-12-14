@@ -123,6 +123,18 @@ describe("CC-05", () => {
   });
 });
 
+describe("CC-06", () => {
+  const tests = [
+    { message: "feat: add new feature\nLine 1" },
+    { message: "feat: add new feature\nLine 1\nLine 2" },
+    { message: "feat: add new feature\nLine 1\n\nBody" },
+  ];
+
+  it.each(tests)("$message", test => {
+    validateRequirement(test.message, "The body MUST begin one blank line after the description");
+  });
+});
+
 describe("EC-01", () => {
   const tests = [
     { message: "feat(wrong): unknown scope" },
