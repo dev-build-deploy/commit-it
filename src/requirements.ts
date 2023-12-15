@@ -8,7 +8,7 @@ import { DiagnosticsLevelEnum, DiagnosticsMessage, FixItHint } from "@dev-build-
 import chalk from "chalk";
 
 import { getFooterElementsFromParagraph } from "./commit";
-import { IConventionalCommitElement, IConventionalCommitOptions, IRawConventionalCommit } from "./conventional_commit";
+import { IConventionalCommitElement, IConventionalCommitOptions, IRawConventionalCommit } from "./conventionalCommit";
 
 /**
  * Conventional Commit requirement
