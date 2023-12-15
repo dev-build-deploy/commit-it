@@ -1,10 +1,10 @@
-/* 
-SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
-SPDX-License-Identifier: MIT
-*/
+/*
+ * SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
+ * SPDX-License-Identifier: MIT
+ */
 
 import * as git from "../src/git";
-import { getCommit, getConventionalCommit, ConventionalCommitError } from "../src/index";
+import { Commit, ConventionalCommit } from "../src/index";
 
 describe("Validate example code in README.md", () => {
   beforeAll(() => {
@@ -13,7 +13,7 @@ describe("Validate example code in README.md", () => {
 
   test("Git Source", () => {
     // Retrieve commit from your git objects database
-    const gitCommit = getCommit({ hash: "f1aaa6e0b89eb87b591ab623053845b5d5488d9f" });
+    const gitCommit = Commit.fromHash({ hash: "f1aaa6e0b89eb87b591ab623053845b5d5488d9f" });
 
     // OPTIONAL; Conventional Commits options
     const conventionalOptions = {
@@ -23,7 +23,7 @@ describe("Validate example code in README.md", () => {
       // EC-02: Commits MUST be prefixed with a type, which consists of one of the configured values (...)
       types: ["build", "ci", "docs", "perf", "refactor", "style", "test"],
     };
-    const conventionalCommit = getConventionalCommit(gitCommit, conventionalOptions);
+    const conventionalCommit = ConventionalCommit.fromCommit(gitCommit, conventionalOptions);
 
     // NOTE: See "Non-compliant Conventional Commits message" for details on how to capture failures.
 
@@ -32,17 +32,12 @@ describe("Validate example code in README.md", () => {
 
   test("String Source", () => {
     // Provide a commit message as a string
-    const gitCommit = getCommit({
+    const gitCommit = Commit.fromString({
       hash: "0ab1cd2ef",
       message: "feat (no noun): non-compliant conventional commits message",
     });
 
-    try {
-      getConventionalCommit(gitCommit); // NOTE: this is an explicit failure
-    } catch (error: unknown) {
-      if (!(error instanceof ConventionalCommitError)) throw error;
-
-      error.errors.forEach(e => console.log(e.toString()));
-    }
+    const commit = ConventionalCommit.fromCommit(gitCommit); // NOTE: this is an explicit failure
+    commit.errors.forEach(e => console.log(e.toString()));
   });
 });

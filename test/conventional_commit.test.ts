@@ -1,11 +1,10 @@
-/* 
-SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
-SPDX-License-Identifier: MIT
-*/
+/*
+ * SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
+ * SPDX-License-Identifier: MIT
+ */
 
-import { ICommit } from "../src/commit";
 import { IConventionalCommitOptions } from "../src/conventional_commit";
-import * as commitIt from "../src/index";
+import { Commit, ConventionalCommit } from "../src/index";
 
 const removeColors = (message: string): string => {
   // eslint-disable-next-line no-control-regex
@@ -13,31 +12,23 @@ const removeColors = (message: string): string => {
 };
 
 const validateRequirement = (message: string, expected: string, options?: IConventionalCommitOptions): void => {
-  const msg = {
-    hash: "1234567890",
-    message: message,
-  };
-
-  let commit: ICommit = commitIt.getCommit(msg);
-  try {
-    commit = commitIt.getConventionalCommit(commit, options);
+  const commit = ConventionalCommit.fromString({ hash: "1234567890", message }, options);
+  if (commit.isValid) {
     throw new Error(`Expected error message '${expected}', but no errors thrown.`);
-  } catch (error: unknown) {
-    if (!(error instanceof commitIt.ConventionalCommitError)) throw error;
-    expect(commitIt.isConventionalCommit(commit)).toBe(false);
-
+  } else {
     let found = false;
-    for (const err of error.errors) {
+    for (const err of commit.errors) {
       if (!found && removeColors(err.toString()).includes(expected)) found = true;
     }
+
     if (!found) {
       throw new Error(
         `Expected error message '${expected}' not found in: ${removeColors(
-          error.errors.map(e => e.message.text).join("\n")
+          commit.errors.map(e => e.message.text).join("\n")
         )}`
       );
     } else {
-      error.errors.forEach(e => console.log(e.toString()));
+      commit.errors.forEach(e => console.log(e.toString()));
     }
   }
 };
@@ -52,16 +43,19 @@ describe("Valid Conventional Commit subjects", () => {
   ];
 
   it.each(tests)("$message", test => {
+    const options = { scopes: ["login"] };
+    const commit = Commit.fromString({ hash: "01ab2cd3", message: test.message });
+    expect(ConventionalCommit.fromCommit(commit, options).isValid).toBe(true);
+  });
+});
+
+describe("Valid Conventional Commit subjects (unknown type)", () => {
+  const tests = [{ message: "morning: add new feature" }, { message: "hippopotamus: fix bug" }];
+
+  it.each(tests)("$message", test => {
     expect(() => {
-      const commit = commitIt.getCommit({ hash: "01ab2cd3", message: test.message });
-      expect(commitIt.isConventionalCommit(commit)).toBe(false);
-      expect(
-        commitIt.isConventionalCommit(
-          commitIt.getConventionalCommit(commit, {
-            scopes: ["login"],
-          })
-        )
-      ).toBe(true);
+      const commit = Commit.fromString({ hash: "01ab2cd3", message: test.message });
+      expect(ConventionalCommit.fromCommit(commit).isValid).toBe(true);
     }).not.toThrow();
   });
 });
@@ -207,54 +201,43 @@ describe("WA-01", () => {
   ];
 
   it.each(tests)("$message", test => {
-    validateRequirement(
-      test.message,
-      "git-trailer has been found in the body of the commit message and will be ignored as it MUST be included in the footer."
-    );
+    const commit = ConventionalCommit.fromString({ hash: "1234567890", message: test.message });
+    expect(commit.warnings.length).toBe(1);
+    expect(
+      removeColors(commit.warnings[0].message.text).includes(
+        "git-trailer has been found in the body of the commit message and will be ignored as it MUST be included in the footer."
+      )
+    ).toBe(true);
   });
 });
 
 describe("Breaking Change", () => {
   test("Has breaking change", () => {
     expect(
-      commitIt.getConventionalCommit({
-        hash: "01ab2cd3",
-        raw: "feat: add new feature without breaking change",
-        subject: "feat: add new feature without breaking change",
-      }).breaking
+      ConventionalCommit.fromString({ hash: "01ab2cd3", message: "feat: add new feature with breaking change" })
+        .breaking
     ).toBe(false);
 
     expect(
-      commitIt.getConventionalCommit({
-        hash: "01ab2cd3",
-        raw: "feat!: add new feature with breaking change",
-        subject: "feat!: add new feature with breaking change",
-      }).breaking
+      ConventionalCommit.fromString({ hash: "01ab2cd3", message: "feat!: add new feature with breaking change" })
+        .breaking
     ).toBe(true);
 
     expect(
-      commitIt.getConventionalCommit({
+      ConventionalCommit.fromString({
         hash: "01ab2cd3",
-        raw: `feat!: add new feature with breaking change in footer
+        message: `feat!: add new feature with breaking change in footer
 
 BREAKING CHANGE: this is a breaking change`,
-        subject: "feat: add new feature with breaking change in footer",
-        footer: {
-          "BREAKING CHANGE": "this is a breaking change",
-        },
       }).breaking
     ).toBe(true);
 
     expect(
-      commitIt.getConventionalCommit({
+      ConventionalCommit.fromString({
         hash: "01ab2cd3",
-        raw: `feat!: add new feature with breaking change in footer
+        message: `feat: add new feature with breaking change in footer
 
 BREAKING-CHANGE: this is a breaking change`,
-        subject: "feat: add new feature with breaking change in footer",
-        footer: {
-          "BREAKING-CHANGE": "this is a breaking change",
-        },
       }).breaking
     ).toBe(true);
   });

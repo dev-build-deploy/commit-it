@@ -1,7 +1,7 @@
 /*
-SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
-SPDX-License-Identifier: MIT
-*/
+ * SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
+ * SPDX-License-Identifier: MIT
+ */
 
 import * as git from "./git";
 
@@ -21,32 +21,6 @@ export interface IStringDataSourceOptions {
 }
 
 /**
- * Git data source options
- * @interface IGitDataSourceOptions
- * @member hash The commit hash
- * @member rootPath The root path of the git repository
- */
-export interface IGitDataSourceOptions {
-  hash: string;
-  rootPath?: string;
-}
-
-/**
- * GitHub data source options
- * @interface IGitHubDataSourceOptions
- * @member hash The commit hash
- * @member owner The GitHub repository owner
- * @member repo The GitHub repository name
- * @member token The GitHub personal access token
- */
-export interface IGitHubDataSourceOptions {
-  hash: string;
-  owner: string;
-  repo: string;
-  token: string;
-}
-
-/**
  * Commit information
  * @interface ICommit
  * @member author The commit author and date
@@ -55,6 +29,7 @@ export interface IGitHubDataSourceOptions {
  * @member subject The commit subject
  * @member body The commit body
  * @member footer The commit footer
+ * @internal
  */
 export interface ICommit {
   author?: { name: string; date: Date };
@@ -67,6 +42,82 @@ export interface ICommit {
 }
 
 const TRAILER_REGEX = /^((BREAKING CHANGE:)|([\w-]+(:| #))|([ \t]+)\w*)/i;
+
+/**
+ * Git Commit
+ * @class Commit
+ * @member author The commit author and date
+ * @member commiter The commit commiter and date
+ * @member hash The commit hash
+ * @member subject The commit subject
+ * @member body The commit body
+ * @member footer The commit footer
+ * @member raw The commit message
+ */
+export class Commit {
+  private _commit: ICommit;
+
+  private constructor(commit: ICommit) {
+    this._commit = commit;
+  }
+
+  /**
+   * Retrieves the commit information from git using the provided hash
+   * @param props The commit hash and root path
+   * @returns The commit object
+   */
+  static fromHash(props: { hash: string; rootPath?: string }): Commit {
+    const commit = git.getCommitFromHash(props.hash, props.rootPath ?? process.cwd());
+    return new Commit(commit);
+  }
+
+  /**
+   * Creates a Commit object from the provided string
+   * @param props The commit hash, author, committer and message
+   * @returns The commit object
+   */
+  static fromString(props: {
+    hash: string;
+    message: string;
+    author?: { name: string; date: Date };
+    committer?: { name: string; date: Date };
+  }): Commit {
+    const commit = {
+      hash: props.hash,
+      ...parseCommitMessage(props.message),
+      author: props.author,
+      committer: props.committer,
+      raw: props.message,
+    };
+    return new Commit(commit);
+  }
+
+  get author(): { name: string; date: Date } | undefined {
+    return this._commit.author;
+  }
+  get committer(): { name: string; date: Date } | undefined {
+    return this._commit.committer;
+  }
+  get hash(): string {
+    return this._commit.hash;
+  }
+  get subject(): string {
+    return this._commit.subject;
+  }
+  get body(): string | undefined {
+    return this._commit.body;
+  }
+  get footer(): Record<string, string> | undefined {
+    return this._commit.footer;
+  }
+  get raw(): string {
+    return this._commit.raw;
+  }
+
+  toJSON(): ICommit {
+    return this._commit;
+  }
+}
 
 /**
  * Returns a dictionary containing key-value pairs extracted from the footer of the provided commit message.
@@ -158,55 +209,4 @@ export function parseCommitMessage(message: string): {
       return acc;
     }, {} as Record<string, string>),
   };
-}
-
-/**
- * Confirms whether the provided commit is a Conventional Commit
- * @param commit
- * @returns
- */
-export function isConventionalCommit(commit: ICommit): boolean {
-  return "type" in commit;
-}
-
-/**
- * Retrieves the commit message (from the indicated source) given the provided SHA hash
- * @param hash SHA of the commit
- * @param source The data source to retrieve the commit message from (git or github)
- * @param options The options to use when retrieving the commit message
- * @returns Commit object
- */
-export function getCommit(
-  options: IStringDataSourceOptions | IGitDataSourceOptions | IGitHubDataSourceOptions
-): ICommit {
-  let commit: ICommit;
-
-  // String data source
-  if ("message" in options) {
-    const stringOptions = options;
-
-    commit = {
-      hash: stringOptions.hash,
-      ...parseCommitMessage(stringOptions.message),
-      author: stringOptions.author,
-      committer: stringOptions.committer,
-      raw: stringOptions.message,
-    };
-    // GitHub data source
-  } else if ("owner" in options) {
-    const githubOptions = options;
-
-    // TODO; implement basic GitHub client
-    commit = {
-      hash: githubOptions.hash,
-      subject: "",
-      raw: "",
-    };
-    // Git data source
-  } else {
-    const gitOptions = options;
-    commit = git.getCommitFromHash(gitOptions.hash, gitOptions.rootPath ?? process.cwd());
-  }
-
-  return commit;
 }
