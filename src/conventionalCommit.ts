@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { DiagnosticsLevelEnum, DiagnosticsMessage, IDiagnosticsMessage } from "@dev-build-deploy/diagnose-it";
+import { DiagnosticsLevelEnum, DiagnosticsMessage } from "@dev-build-deploy/diagnose-it";
 
 import { Commit } from "./commit";
 import * as requirements from "./requirements";
@@ -174,10 +174,10 @@ export class ConventionalCommit {
   get isValid(): boolean {
     return this._errors.length === 0;
   }
-  get warnings(): IDiagnosticsMessage[] {
+  get warnings(): DiagnosticsMessage[] {
     return this._warnings;
   }
-  get errors(): IDiagnosticsMessage[] {
+  get errors(): DiagnosticsMessage[] {
     return this._errors;
   }
 
