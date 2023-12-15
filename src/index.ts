@@ -4,5 +4,5 @@
  */
 
 export { Commit } from "./commit";
-export { ConventionalCommit } from "./conventional_commit";
-export type { IConventionalCommitOptions } from "./conventional_commit";
+export { ConventionalCommit } from "./conventionalCommit";
+export type { IConventionalCommitOptions } from "./conventionalCommit";

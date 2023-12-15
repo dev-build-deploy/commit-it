@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { IConventionalCommitOptions } from "../src/conventional_commit";
+import { IConventionalCommitOptions } from "../src/conventionalCommit";
 import { Commit, ConventionalCommit } from "../src/index";
 
 const removeColors = (message: string): string => {
