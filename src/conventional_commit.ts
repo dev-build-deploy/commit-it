@@ -1,13 +1,11 @@
-/* 
-SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
-SPDX-License-Identifier: MIT
-*/
+/*
+ * SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
+ * SPDX-License-Identifier: MIT
+ */
 
-import assert from "assert";
+import { DiagnosticsLevelEnum, DiagnosticsMessage, IDiagnosticsMessage } from "@dev-build-deploy/diagnose-it";
 
-import { DiagnosticsMessage } from "@dev-build-deploy/diagnose-it";
-
-import { ICommit } from "./commit";
+import { Commit } from "./commit";
 import * as requirements from "./requirements";
 
 /**
@@ -46,7 +44,7 @@ export type IConventionalCommitElement = {
  * @internal
  */
 export interface IRawConventionalCommit {
-  commit: ICommit;
+  commit: Commit;
   type: IConventionalCommitElement;
   scope: IConventionalCommitElement;
   breaking: IConventionalCommitElement;
@@ -57,96 +55,167 @@ export interface IRawConventionalCommit {
 
 /**
  * Conventional Commit
- * @interface IConventionalCommit
+ * @class ConventionalCommit
  * @member type Conventional Commit type
  * @member scope Conventional Commit scope
  * @member breaking Commit message has a Conventional Commit breaking change (!)
  * @member description Conventional Commit description
- */
-export interface IConventionalCommit extends ICommit {
-  type: string;
-  scope?: string;
-  breaking?: boolean;
-  description: string;
-}
-
-/**
- * Conventional Commit error
- * @class ConventionalCommitError
- * @extends Error
+ * @member hash Commit hash
+ * @member subject Commit subject
+ * @member body Commit body
+ * @member footer Commit footer
+ * @member author Commit author and date
+ * @member committer Commit committer and date
+ * @member isValid Whether the Conventional Commit is valid
  * @member errors List of error messages
+ * @member warnings List of warning messages
  */
-export class ConventionalCommitError extends Error {
-  errors: DiagnosticsMessage[];
-  constructor(errors: DiagnosticsMessage[]) {
-    super("Commit is not compliant with the Conventional Commits specification.");
-    this.name = "ConventionalCommitError";
-    this.errors = errors;
+export class ConventionalCommit {
+  private _raw: IRawConventionalCommit;
+  private _errors: DiagnosticsMessage[] = [];
+  private _warnings: DiagnosticsMessage[] = [];
+
+  private constructor(raw: IRawConventionalCommit, options?: IConventionalCommitOptions) {
+    this._raw = raw;
+    this.validate(options);
+  }
+
+  /**
+   * Creates a new Conventional Commit object from the provided Commit.
+   * @param commit Commit to convert to a Conventional Commit
+   * @param options Options to use when validating the commit message
+   * @returns Conventional Commit
+   */
+  static fromCommit(commit: Commit, options?: IConventionalCommitOptions): ConventionalCommit {
+    // Convert the Commit message to Raw Conventional Commit data
+    const rawConvCommit = createRawConventionalCommit(commit);
+
+    // Create a new Conventional Commit object
+    return new ConventionalCommit(rawConvCommit, options);
+  }
+
+  /**
+   * Creates a new Conventional Commit object from the provided string.
+   * @param props Hash, message and author/committer information
+   * @param options Options to use when validating the commit message
+   * @returns Conventional Commit
+   */
+  static fromString(
+    props: {
+      hash: string;
+      message: string;
+      author?: { name: string; date: Date };
+      committer?: { name: string; date: Date };
+    },
+    options?: IConventionalCommitOptions
+  ): ConventionalCommit {
+    return ConventionalCommit.fromCommit(Commit.fromString(props), options);
+  }
+
+  /**
+   * Creates a new Conventional Commit object from the provided hash.
+   * @param props Hash and root path
+   * @param options Options to use when validating the commit message
+   * @returns Conventional Commit
+   */
+  static fromHash(
+    props: { hash: string; rootPath?: string },
+    options?: IConventionalCommitOptions
+  ): ConventionalCommit {
+    return ConventionalCommit.fromCommit(Commit.fromHash(props), options);
+  }
+
+  // Contributors
+  get author(): { name: string; date: Date } | undefined {
+    return this._raw.commit.author;
+  }
+  get committer(): { name: string; date: Date } | undefined {
+    return this._raw.commit.committer;
+  }
+
+  // Commit
+  get hash(): string {
+    return this._raw.commit.hash;
+  }
+  get subject(): string {
+    return this._raw.commit.subject;
+  }
+  get body(): string | undefined {
+    return this._raw.commit.body;
+  }
+  get footer(): Record<string, string> | undefined {
+    return this._raw.commit.footer;
+  }
+
+  // Conventional Commit
+  get type(): string | undefined {
+    return this._raw.type.value;
+  }
+  get scope(): string | undefined {
+    return this._raw.scope.value;
+  }
+  get description(): string | undefined {
+    return this._raw.description.value;
+  }
+
+  get breaking(): boolean {
+    return (
+      this._raw.breaking.value === "!" ||
+      (this.footer !== undefined && ("BREAKING CHANGE" in this.footer || "BREAKING-CHANGE" in this.footer))
+    );
+  }
+
+  // Raw
+  get raw(): string {
+    return this._raw.commit.raw;
+  }
+
+  // Validation
+  get isValid(): boolean {
+    return this._errors.length === 0;
+  }
+  get warnings(): IDiagnosticsMessage[] {
+    return this._warnings;
+  }
+  get errors(): IDiagnosticsMessage[] {
+    return this._errors;
+  }
+
+  toJSON(): { [key: string]: unknown } {
+    return {
+      hash: this.hash,
+      author: this.author,
+      committer: this.committer,
+      subject: this.subject,
+      body: this.body,
+      footer: this.footer,
+      type: this.type,
+      breaking: this.breaking,
+      description: this.description,
+      validation: {
+        isValid: this.isValid,
+        errors: this.errors,
+        warnings: this.warnings,
+      },
+    };
+  }
+
+  // Private validation function
+  private validate(options?: IConventionalCommitOptions): void {
+    let results: DiagnosticsMessage[] = [];
+    requirements.commitRules.forEach(rule => (results = [...results, ...rule.validate(this._raw, options)]));
+    this._errors = results.filter(r => r.level === DiagnosticsLevelEnum.Error);
+    this._warnings = results.filter(r => r.level === DiagnosticsLevelEnum.Warning);
   }
 }
 
-/**
- * Returns whether the provided commit has a breaking change (either "!" in subject, or usage of /BREAKING[- ]CHANGE:/).
- * @param commit Commit to check
- * @returns Whether the provided commit has a breaking change
- */
-function hasBreakingChange(commit: IRawConventionalCommit): boolean {
-  return (
-    commit.breaking.value === "!" ||
-    (commit.commit.footer !== undefined &&
-      ("BREAKING CHANGE" in commit.commit.footer || "BREAKING-CHANGE" in commit.commit.footer))
-  );
-}
-
-/**
- * Validates a commit message against the Conventional Commit specification.
- * @param commit Commit message to validate against the Conventional Commit specification
- * @returns Conventional Commit mesage
- * @throws ExpressiveMessage[] if the commit message is not a valid Conventional Commit
- * @see https://www.conventionalcommits.org/en/v1.0.0/
- */
-function validate(commit: IRawConventionalCommit, options?: IConventionalCommitOptions): IConventionalCommit {
-  let errors: DiagnosticsMessage[] = [];
-
-  requirements.commitRules.forEach(rule => (errors = [...errors, ...rule.validate(commit, options)]));
-  if (errors.length > 0) throw new ConventionalCommitError(errors);
-
-  // Assume that we have a valid Conventional Commit message
-  assert(commit.type.value);
-  assert(commit.description.value);
-
-  return {
-    ...commit.commit,
-    type: commit.type.value,
-    scope: commit.scope.value,
-    breaking: hasBreakingChange(commit),
-    description: commit.description.value,
-  };
-}
-
-/**
- * Returns whether the provided commit is a Conventional Commit.
- * @param commit Commit to check
- * @returns Whether the provided commit is a Conventional Commit
- */
-export function isConventionalCommit(commit: ICommit | IConventionalCommit): boolean {
-  return "type" in commit;
-}
-
-/**
- * Parses a Commit message into a Conventional Commit.
- * @param commit Commit message to parse
- * @param options Options to use when parsing the commit message
- * @throws ExpressiveMessage[] if the commit message is not a valid Conventional Commit
- * @returns Conventional Commit
- */
-export function getConventionalCommit(commit: ICommit, options?: IConventionalCommitOptions): IConventionalCommit {
+function createRawConventionalCommit(commit: Commit): IRawConventionalCommit {
   const ConventionalCommitRegex = new RegExp(
     /^(?<type>[^(!:]*)(?<scope>\([^)]*\)\s*)?(?<breaking>!\s*)?(?<separator>:\s*)?(?<subject>.*)?$/
   );
 
   const match = ConventionalCommitRegex.exec(commit.subject.split(/\r?\n/)[0]);
-  let conventionalCommit: IRawConventionalCommit = {
+  const conventionalCommit: IRawConventionalCommit = {
     commit: commit,
     type: { index: 1, value: match?.groups?.type },
     scope: { index: 1, value: match?.groups?.scope },
@@ -164,7 +233,5 @@ export function getConventionalCommit(commit: ICommit, options?: IConventionalCo
     return commit;
   }
 
-  conventionalCommit = intializeIndices(conventionalCommit);
-
-  return validate(conventionalCommit, options);
+  return intializeIndices(conventionalCommit);
 }

@@ -1,10 +1,10 @@
 /*
-SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
-
-SPDX-License-Identifier: MIT
-SPDX-License-Identifier: CC-BY-3.0
-*/
-import { DiagnosticsMessage, FixItHint } from "@dev-build-deploy/diagnose-it";
+ * SPDX-FileCopyrightText: 2023 Kevin de Jong <monkaii@hotmail.com>
+ *
+ * SPDX-License-Identifier: MIT
+ * SPDX-License-Identifier: CC-BY-3.0
+ */
+import { DiagnosticsLevelEnum, DiagnosticsMessage, FixItHint } from "@dev-build-deploy/diagnose-it";
 import chalk from "chalk";
 
 import { getFooterElementsFromParagraph } from "./commit";
@@ -43,12 +43,13 @@ function highlightString(str: string, substring: string | string[]): string {
   return result;
 }
 
-function createSubjectError(
+function createDiagnosticsMessage(
   commit: IRawConventionalCommit,
   description: string,
   highlight: string | string[],
   type: keyof IRawConventionalCommit,
-  whitespace = false
+  whitespace = false,
+  level: DiagnosticsLevelEnum = DiagnosticsLevelEnum.Error
 ): DiagnosticsMessage {
   const element = commit[type] as IConventionalCommitElement;
   let hintIndex = element.index;
@@ -66,10 +67,14 @@ function createSubjectError(
     hintLength = (prevElement?.value?.length ?? 1) - (prevElement?.value?.trimEnd().length ?? 1);
   }
 
-  return DiagnosticsMessage.createError(commit.commit.hash, {
-    text: highlightString(description, highlight),
-    linenumber: 1,
-    column: hintIndex,
+  return new DiagnosticsMessage({
+    file: commit.commit.hash,
+    level,
+    message: {
+      text: highlightString(description, highlight),
+      linenumber: 1,
+      column: hintIndex,
+    },
   })
     .setContext(1, commit.commit.subject.split(/\r?\n/)[0])
     .addFixitHint(FixItHint.create({ index: hintIndex, length: hintLength === 0 ? 1 : hintLength }));
@@ -93,18 +98,20 @@ class CC01 implements ICommitRequirement {
     } else {
       // Ensure that we have a noun
       if (!isNoun(commit.type.value))
-        errors.push(createSubjectError(commit, this.description, "which consists of a noun", "type"));
+        errors.push(createDiagnosticsMessage(commit, this.description, "which consists of a noun", "type"));
       // Validate for spacing after the type
       if (commit.type.value.trim() !== commit.type.value) {
         if (commit.scope.value) {
-          errors.push(createSubjectError(commit, this.description, "followed by the OPTIONAL scope", "scope", true));
+          errors.push(
+            createDiagnosticsMessage(commit, this.description, "followed by the OPTIONAL scope", "scope", true)
+          );
         } else if (commit.breaking.value) {
           errors.push(
-            createSubjectError(commit, this.description, ["followed by the", "OPTIONAL !"], "breaking", true)
+            createDiagnosticsMessage(commit, this.description, ["followed by the", "OPTIONAL !"], "breaking", true)
           );
         } else {
           errors.push(
-            createSubjectError(
+            createDiagnosticsMessage(
               commit,
               this.description,
               ["followed by the", "REQUIRED terminal colon"],
@@ -119,11 +126,11 @@ class CC01 implements ICommitRequirement {
       if (commit.scope.value && commit.scope.value.trim() !== commit.scope.value) {
         if (commit.breaking.value) {
           errors.push(
-            createSubjectError(commit, this.description, ["followed by the", "OPTIONAL !"], "breaking", true)
+            createDiagnosticsMessage(commit, this.description, ["followed by the", "OPTIONAL !"], "breaking", true)
           );
         } else {
           errors.push(
-            createSubjectError(
+            createDiagnosticsMessage(
               commit,
               this.description,
               ["followed by the", "REQUIRED terminal colon"],
@@ -136,7 +143,7 @@ class CC01 implements ICommitRequirement {
 
       if (commit.breaking.value && commit.breaking.value.trim() !== commit.breaking.value) {
         errors.push(
-          createSubjectError(
+          createDiagnosticsMessage(
             commit,
             this.description,
             ["followed by the", "REQUIRED terminal colon"],
@@ -150,7 +157,7 @@ class CC01 implements ICommitRequirement {
     // MUST have a terminal colon
     if (!commit.seperator.value) {
       errors.push(
-        createSubjectError(commit, this.description, ["followed by the", "REQUIRED terminal colon"], "seperator")
+        createDiagnosticsMessage(commit, this.description, ["followed by the", "REQUIRED terminal colon"], "seperator")
       );
     }
 
@@ -175,7 +182,7 @@ class CC04 implements ICommitRequirement {
       (commit.scope.value === "()" ||
         !isNoun(commit.scope.value.trimEnd().substring(1, commit.scope.value.trimEnd().length - 1)))
     ) {
-      errors.push(createSubjectError(commit, this.description, "A scope MUST consist of a noun", "scope"));
+      errors.push(createDiagnosticsMessage(commit, this.description, "A scope MUST consist of a noun", "scope"));
     }
 
     return errors;
@@ -204,7 +211,7 @@ class CC05 implements ICommitRequirement {
       commit.seperator.value.length - commit.seperator.value.trim().length !== 1
     ) {
       errors.push(
-        createSubjectError(
+        createDiagnosticsMessage(
           commit,
           this.description,
           "A description MUST immediately follow the colon and space",
@@ -309,7 +316,7 @@ class EC01 implements ICommitRequirement {
     )}) surrounded by parenthesis`;
 
     return [
-      createSubjectError(
+      createDiagnosticsMessage(
         commit,
         this.description,
         ["A scope MUST consist of", `(${uniqueScopeList.join(", ")})`],
@@ -332,9 +339,9 @@ class EC02 implements ICommitRequirement {
     if (uniqueAddedTypes.has("fix")) uniqueAddedTypes.delete("fix");
     const expectedTypes = ["feat", "fix", ...Array.from(uniqueAddedTypes)];
 
-    this.description = `Commits MUST be prefixed with a type, which consists of one of the configured values (${expectedTypes.join(
-      ", "
-    )}).`;
+    this.description = `Commits ${
+      uniqueAddedTypes.size > 0 ? "MUST" : "MAY"
+    } be prefixed with a type, which consists of one of the configured values (${expectedTypes.join(", ")}).`;
 
     if (
       commit.type.value === undefined ||
@@ -345,17 +352,30 @@ class EC02 implements ICommitRequirement {
     }
 
     if (commit.type.value.trim().length === 0) {
-      return [createSubjectError(commit, this.description, "prefixed with a type", "type")];
+      return [createDiagnosticsMessage(commit, this.description, "prefixed with a type", "type")];
     }
 
-    return [
-      createSubjectError(
-        commit,
-        this.description,
-        ["prefixed with a type, which consists of", `(${expectedTypes.join(", ")})`],
-        "type"
-      ),
-    ];
+    if (uniqueAddedTypes.size > 0) {
+      return [
+        createDiagnosticsMessage(
+          commit,
+          this.description,
+          ["prefixed with a type, which consists of", `(${expectedTypes.join(", ")})`],
+          "type"
+        ),
+      ];
+    } else {
+      return [
+        createDiagnosticsMessage(
+          commit,
+          this.description,
+          ["prefixed with a type, which consists of", `(${expectedTypes.join(", ")})`],
+          "type",
+          false,
+          DiagnosticsLevelEnum.Warning
+        ),
+      ];
+    }
   }
 }
 

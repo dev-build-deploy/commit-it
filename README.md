@@ -17,12 +17,17 @@ Lightweight (Conventional) Commits library, allowing you to retrieve (Convention
 
 ## Basic Usage
 
-### Compliant Conventional Commits message
+### Commit Message
 ```ts
-import { getCommit, getConventionalCommit } from '@dev-build-deploy/commit-it';
+import { Commit } from "@dev-build-deploy/commit-it";
 
-// Retrieve commit from your git objects database
-const gitCommit = getCommit({ hash: "f1aaa6e0b89eb87b591ab623053845b5d5488d9f" });
+const gitCommit = Commit.fromHash({ hash: "f1aaa6e0b89eb87b591ab623053845b5d5488d9f" });
+console.log(JSON.stringify(gitCommit, null, 2))
+```
+
+### Conventional Commit message (compliant)
+```ts
+import { ConventionalCommit } from '@dev-build-deploy/commit-it';
 
 // OPTIONAL; Conventional Commits options
 const conventionalOptions = {
@@ -31,12 +36,15 @@ const conventionalOptions = {
 
   // EC-02: Commits MUST be prefixed with a type, which consists of one of the configured values (feat, fix, ...)
   types: [ "build", "ci", "docs", "perf", "refactor", "style", "test" ],
-}
-const conventionalCommit = getConventionalCommit(gitCommit, conventionalOptions);
+};
+
+const conventionalCommit = ConventionalCommit.fromHash(
+  { hash: "f1aaa6e0b89eb87b591ab623053845b5d5488d9f" },
+  conventionalOptions
+);
 
 // NOTE: See "Non-compliant Conventional Commits message" for details on how to capture failures.
-
-console.log(JSON.stringify(conventionalCommit, null, 2))
+console.log(JSON.stringify(conventionalCommit, null, 2));
 ```
 <details>
   <summary>Output...</summary>
@@ -59,30 +67,31 @@ console.log(JSON.stringify(conventionalCommit, null, 2))
   },
   "type": "feat",
   "breaking": false,
-  "description": "mark Conventional Commit as 'breaking' in case specified in the footer"
+  "description": "mark Conventional Commit as 'breaking' in case specified in the footer",
+  "validation": {
+    "isValid": true,
+    "errors": [],
+    "warnings": []
+  }
 }
 ```
 
 </details>
 <br>
 
-### Non-compliant Conventional Commits message
+### Conventional Commit message (non-compliant)
 
 ```ts
-import { getCommit, getConventionalCommit, ConventionalCommitError } from '@dev-build-deploy/commit-it';
+import { ConventionalCommit } from '@dev-build-deploy/commit-it';
 
 // Provide a commit message as a string
-const gitCommit = getCommit({
+const conventionalCommit = ConventionalCommit.fromString({
   hash: "0ab1cd2ef",
   message: "feat (no noun): non-compliant conventional commits message",
 });
 
-try {
-  getConventionalCommit(gitCommit); // NOTE: this is an explicit failure
-} catch (error: unknown) {
-  if (!(error instanceof ConventionalCommitError)) throw error;
-
-  error.errors.forEach(e => console.log(e.message));
+if (!conventionalCommit.isValid) {
+  conventionalCommit.errors.forEach(e => console.log(e.toString()));
 }
 ```
 
