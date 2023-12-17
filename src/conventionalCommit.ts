@@ -149,9 +149,13 @@ export class ConventionalCommit {
 
   // Conventional Commit
   get type(): string | undefined {
-    return this._raw.type.value;
+    return this._raw.type.value?.trimEnd();
   }
   get scope(): string | undefined {
+    // Removes the parenthesis from the scope
+    if (this._raw.scope.value !== undefined) {
+      return this._raw.scope.value.trimEnd().replace(/(\(|\))/g, "");
+    }
     return this._raw.scope.value;
   }
   get description(): string | undefined {
@@ -160,7 +164,7 @@ export class ConventionalCommit {
 
   get breaking(): boolean {
     return (
-      this._raw.breaking.value === "!" ||
+      this._raw.breaking.value?.trimEnd() === "!" ||
       (this.footer !== undefined && ("BREAKING CHANGE" in this.footer || "BREAKING-CHANGE" in this.footer))
     );
   }
