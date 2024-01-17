@@ -3,7 +3,7 @@
 
 repos:
 - repo: https://github.com/dev-build-deploy/commit-me
-  rev: v1.1.0
+  rev: v1.3.1
   hooks:
   - id: commit-me
     args: ['--config', '.github/.commit-me.json']
