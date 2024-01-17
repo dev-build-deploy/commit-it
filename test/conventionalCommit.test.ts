@@ -285,3 +285,33 @@ describe("Commit message ends at first comment (#)", () => {
     expect(commit.breaking).toBe(test.breaking);
   });
 });
+
+describe("Fixup commits", () => {
+  const tests = [{ message: "fixup! add feat: some feature" }, { message: "fixup! fixup! add feat: some feature" }];
+
+  it.each(tests)("$message", test => {
+    const commit = ConventionalCommit.fromString({ hash: "01ab2cd3", message: test.message });
+
+    expect(commit.isValid).toBe(false);
+    expect(commit.isFixupCommit).toBe(true);
+  });
+});
+
+describe("Merge commits", () => {
+  const tests = [
+    { message: "Merge pull request #123 from some-branch/feature/branch" },
+    { message: "Merge pull request #123 from 'some-branch/feature/branch'" },
+    { message: "Merged in ci/some-branch (pull request #123)" },
+    { message: "Merged in 'ci/some-branch' (pull request #123)" },
+    { message: "Merge branch 'ci/some-branch' into 'main'" },
+    { message: "Merge branch 'ci/some-branch' into main" },
+    { message: "Merge branch ci/some-branch into main" },
+  ];
+
+  it.each(tests)("$message", test => {
+    const commit = ConventionalCommit.fromString({ hash: "01ab2cd3", message: test.message });
+
+    expect(commit.isValid).toBe(false);
+    expect(commit.isMergeCommit).toBe(true);
+  });
+});
