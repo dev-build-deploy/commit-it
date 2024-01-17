@@ -25,6 +25,7 @@ describe("Parse commit messages", () => {
         subject: "Example commit message without body or footer",
         body: undefined,
         footer: undefined,
+        attributes: { isFixup: false, isMerge: false },
       },
     });
   });
@@ -48,6 +49,7 @@ describe("Parse commit messages", () => {
         subject: "Example commit message without body or footer",
         body: undefined,
         footer: undefined,
+        attributes: { isFixup: false, isMerge: false },
       },
     });
   });
@@ -62,6 +64,7 @@ describe("Parse commit messages", () => {
         subject: "Example commit message without body or footer",
         body: undefined,
         footer: undefined,
+        attributes: { isFixup: false, isMerge: false },
       },
     });
 
@@ -76,6 +79,7 @@ describe("Parse commit messages", () => {
         subject: "Example commit message without body or footer, with newline",
         body: undefined,
         footer: undefined,
+        attributes: { isFixup: false, isMerge: false },
       },
     });
 
@@ -93,6 +97,7 @@ describe("Parse commit messages", () => {
         subject: "Example commit message without body or footer, with newlines",
         body: undefined,
         footer: undefined,
+        attributes: { isFixup: false, isMerge: false },
       },
     });
   });
@@ -116,6 +121,7 @@ and paragraphs`;
         subject: "Example commit message with body",
         body: "This is the body of the commit message",
         footer: undefined,
+        attributes: { isFixup: false, isMerge: false },
       },
     });
 
@@ -128,6 +134,7 @@ and paragraphs`;
         subject: "Example commit message with body",
         body: `This is the body of the commit message\nwith multiple lines\n\nand paragraphs`,
         footer: undefined,
+        attributes: { isFixup: false, isMerge: false },
       },
     });
   });
@@ -158,6 +165,7 @@ BREAKING-CHANGE: This is a breaking change
         footer: {
           "Acknowledged-by": "Jane Doe",
         },
+        attributes: { isFixup: false, isMerge: false },
       },
     });
 
@@ -173,6 +181,7 @@ BREAKING-CHANGE: This is a breaking change
           "Acknowledged-by": "Jane Doe",
           "Signed-off-by": "John Doe",
         },
+        attributes: { isFixup: false, isMerge: false },
       },
     });
 
@@ -189,6 +198,7 @@ BREAKING-CHANGE: This is a breaking change
           "Signed-off-by": "John Doe",
           "BREAKING-CHANGE": "This is a breaking change\nusing multiple lines as value",
         },
+        attributes: { isFixup: false, isMerge: false },
       },
     });
   });
@@ -221,6 +231,72 @@ Implements #1234`;
           "BREAKING-CHANGE": "This is a breaking change\nusing multiple lines as value",
           Implements: "#1234",
         },
+        attributes: { isFixup: false, isMerge: false },
+      },
+    });
+  });
+
+  test("Fixup commit", () => {
+    const fullCommit = "fixup! fixup! Example commit message with footer";
+
+    expect(Commit.fromString({ hash: "0a0b0c0d", message: fullCommit })).toEqual({
+      _commit: {
+        raw: fullCommit,
+        hash: "0a0b0c0d",
+        author: undefined,
+        committer: undefined,
+        subject: "fixup! fixup! Example commit message with footer",
+        body: undefined,
+        footer: undefined,
+        attributes: { isFixup: true, isMerge: false },
+      },
+    });
+  });
+
+  test("Merge commit (GitHub)", () => {
+    const fullCommit = "Merge pull request #123 from some-branch/feature/branch";
+    expect(Commit.fromString({ hash: "0a0b0c0d", message: fullCommit })).toEqual({
+      _commit: {
+        raw: fullCommit,
+        hash: "0a0b0c0d",
+        author: undefined,
+        committer: undefined,
+        subject: "Merge pull request #123 from some-branch/feature/branch",
+        body: undefined,
+        footer: undefined,
+        attributes: { isFixup: false, isMerge: true },
+      },
+    });
+  });
+
+  test("Merge commit (Bitbucket)", () => {
+    const fullCommit = "Merged in ci/some-branch (pull request #123)";
+    expect(Commit.fromString({ hash: "0a0b0c0d", message: fullCommit })).toEqual({
+      _commit: {
+        raw: fullCommit,
+        hash: "0a0b0c0d",
+        author: undefined,
+        committer: undefined,
+        subject: "Merged in ci/some-branch (pull request #123)",
+        body: undefined,
+        footer: undefined,
+        attributes: { isFixup: false, isMerge: true },
+      },
+    });
+  });
+
+  test("Merge commit (GitLab)", () => {
+    const fullCommit = "Merge branch 'ci/some-branch' into 'main'";
+    expect(Commit.fromString({ hash: "0a0b0c0d", message: fullCommit })).toEqual({
+      _commit: {
+        raw: fullCommit,
+        hash: "0a0b0c0d",
+        author: undefined,
+        committer: undefined,
+        subject: "Merge branch 'ci/some-branch' into 'main'",
+        body: undefined,
+        footer: undefined,
+        attributes: { isFixup: false, isMerge: true },
       },
     });
   });

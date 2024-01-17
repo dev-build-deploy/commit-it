@@ -169,6 +169,14 @@ export class ConventionalCommit {
     );
   }
 
+  // Attributes
+  get isFixupCommit(): boolean {
+    return this._raw.commit.isFixupCommit;
+  }
+  get isMergeCommit(): boolean {
+    return this._raw.commit.isMergeCommit;
+  }
+
   // Raw
   get raw(): string {
     return this._raw.commit.raw;
@@ -200,6 +208,10 @@ export class ConventionalCommit {
         isValid: this.isValid,
         errors: this.errors,
         warnings: this.warnings,
+      },
+      attributes: {
+        isFixup: this.isFixupCommit,
+        isMerge: this.isMergeCommit,
       },
     };
   }

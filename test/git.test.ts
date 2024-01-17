@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
+import { ICommit } from "../src/commit";
 import * as git from "../src/git";
 import { Commit } from "../src/index";
 
@@ -38,7 +39,8 @@ in .git/objects. Rationale: remove any need for external dependencies
 
 Calling \`getCommitMessage(...)\` will return a standard ICommit object`,
         footer: undefined,
-      } as Commit,
+        attributes: { isFixup: false, isMerge: false },
+      } as ICommit,
     });
   });
 
@@ -59,7 +61,8 @@ Calling \`getCommitMessage(...)\` will return a standard ICommit object`,
         subject: "Initial commit",
         body: undefined,
         footer: undefined,
-      } as Commit,
+        attributes: { isFixup: false, isMerge: false },
+      } as ICommit,
     });
   });
 

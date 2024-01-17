@@ -21,6 +21,11 @@ export interface IStringDataSourceOptions {
 }
 
 /**
+ * Name and Date type
+ */
+export type NameAndDateType = { name: string; date: Date };
+
+/**
  * Commit information
  * @interface ICommit
  * @member author The commit author and date
@@ -32,13 +37,17 @@ export interface IStringDataSourceOptions {
  * @internal
  */
 export interface ICommit {
-  author?: { name: string; date: Date };
-  committer?: { name: string; date: Date };
+  author?: NameAndDateType;
+  committer?: NameAndDateType;
   hash: string;
   raw: string;
   subject: string;
   body?: string;
   footer?: Record<string, string>;
+  attributes: {
+    isFixup: boolean;
+    isMerge: boolean;
+  };
 }
 
 const TRAILER_REGEX = /^((BREAKING CHANGE:)|([\w-]+(:| #))|([ \t]+)\w*)/i;
@@ -120,6 +129,12 @@ export class Commit {
   get raw(): string {
     return this._commit.raw;
   }
+  get isFixupCommit(): boolean {
+    return this._commit.attributes.isFixup;
+  }
+  get isMergeCommit(): boolean {
+    return this._commit.attributes.isMerge;
+  }
 
   toJSON(): ICommit {
     return this._commit;
@@ -177,6 +192,24 @@ export function getFooterElementsFromParagraph(
 }
 
 /**
+ * Checks if the provided subject is a common (default) merge pattern.
+ * Currently supported:
+ * - GitHub
+ * - BitBucket
+ * - GitLab
+ *
+ * @param subject The subject to check
+ * @returns True if the subject is a common merge pattern, false otherwise
+ */
+function subjectIsMergePattern(subject: string): boolean {
+  const githubMergeRegex = /^Merge pull request #(\d+) from '?(.*)'?$/;
+  const bitbucketMergeRegex = /^Merged in '?(.*)'? \(pull request #(\d+)\)$/;
+  const gitlabMergeRegex = /^Merge branch '?(.*?)'? into '?(.*?)'?$/;
+
+  return githubMergeRegex.test(subject) || bitbucketMergeRegex.test(subject) || gitlabMergeRegex.test(subject);
+}
+
+/**
  * Parses the provided commit message (full message, not just the subject) into
  * a Commit object.
  * @param message The commit message
@@ -187,6 +220,10 @@ export function parseCommitMessage(message: string): {
   subject: string;
   body?: string;
   footer?: Record<string, string>;
+  attributes: {
+    isFixup: boolean;
+    isMerge: boolean;
+  };
 } {
   const isTrailerOnly = (message: string): boolean =>
     message.split(/\r?\n/).every(line => {
@@ -208,12 +245,20 @@ export function parseCommitMessage(message: string): {
     if (body === "") body = undefined;
   }
 
+  const subject = paragraphs[0].trim();
+  const isFixup = subject.toLowerCase().startsWith("fixup!");
+  const isMerge = subjectIsMergePattern(subject);
+
   return {
-    subject: paragraphs[0].trim(),
-    body: body,
+    subject,
+    body,
     footer: getFooterElementsFromParagraph(footer ?? "")?.reduce((acc, cur) => {
       acc[cur.key] = cur.value;
       return acc;
     }, {} as Record<string, string>),
+    attributes: {
+      isFixup,
+      isMerge,
+    },
   };
 }

@@ -4,5 +4,7 @@
  */
 
 export { Commit } from "./commit";
+export type { NameAndDateType } from "./commit";
+
 export { ConventionalCommit } from "./conventionalCommit";
 export type { IConventionalCommitOptions } from "./conventionalCommit";

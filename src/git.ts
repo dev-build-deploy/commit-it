@@ -9,20 +9,7 @@ import * as path from "path";
 import * as zlib from "zlib";
 
 import * as ccommit from "./commit";
-
-/** @internal */
-type NameAndDateType = { name: string; date: Date };
-
-/** @internal */
-type GitCommitType = {
-  hash: string;
-  raw: string;
-  author?: NameAndDateType;
-  committer?: NameAndDateType;
-  subject: string;
-  body?: string;
-  footer?: Record<string, string>;
-};
+import { ICommit, NameAndDateType } from "./commit";
 
 /** @internal */
 export const gitObjectFolder = ".git/objects";
@@ -71,22 +58,17 @@ function getValueFromKey(commit: string, key: string): string | undefined {
  * @param hash Commit hash
  * @returns Commit object
  */
-function parseCommitMessage(commit: string, hash: string): GitCommitType {
+function parseCommitMessage(commit: string, hash: string): ICommit {
   const author = extractNameAndDate(getValueFromKey(commit, "author"));
   const committer = extractNameAndDate(getValueFromKey(commit, "committer"));
+
   const raw = commit
     .split(/^[\r\n]+/m)
     .splice(1)
     .join("\n")
     .trim();
 
-  return {
-    raw,
-    hash: hash,
-    author: author,
-    committer: committer,
-    ...ccommit.parseCommitMessage(raw),
-  };
+  return { raw, hash, author, committer, ...ccommit.parseCommitMessage(raw) };
 }
 
 /**
@@ -94,7 +76,7 @@ function parseCommitMessage(commit: string, hash: string): GitCommitType {
  * @param hash Hash of the commit to read
  * @returns Commit object or undefined if the commit could not be found in the local repository
  */
-function getCommitFromLocalObjects(hash: string, rootPath: string): ccommit.ICommit | undefined {
+function getCommitFromLocalObjects(hash: string, rootPath: string): ICommit | undefined {
   const objectPath = path.join(rootPath, gitObjectFolder, hash.substring(0, 2), "/", hash.substring(2));
   if (!fs.existsSync(objectPath)) return undefined;
 
@@ -108,7 +90,7 @@ function getCommitFromLocalObjects(hash: string, rootPath: string): ccommit.ICom
  * @param rootPath Path to the git repository
  * @returns Commit object or undefined if the commit could not be found in the pack files
  */
-function getCommitFromPackFile(hash: string, rootPath: string): ccommit.ICommit | undefined {
+function getCommitFromPackFile(hash: string, rootPath: string): ICommit | undefined {
   for (const entry of fs.readdirSync(path.join(rootPath, gitObjectFolder, "pack"))) {
     const filePath = path.join(rootPath, gitObjectFolder, "pack", entry);
     if (path.extname(filePath) !== ".idx") continue;
@@ -127,7 +109,7 @@ function getCommitFromPackFile(hash: string, rootPath: string): ccommit.ICommit 
  * @returns Commit object
  * @internal
  */
-export function getCommitFromHash(hash: string, rootPath: string): ccommit.ICommit {
+export function getCommitFromHash(hash: string, rootPath: string): ICommit {
   if (!fs.existsSync(path.join(rootPath, gitObjectFolder)))
     throw new Error(`Invalid git folder specified (${path.join(rootPath, gitObjectFolder)})`);
 
