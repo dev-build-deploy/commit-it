@@ -219,9 +219,19 @@ describe("Breaking Change", () => {
     { message: "fix! : fix bug with breaking change with incorrect whitespace", isBreaking: true },
     { message: "fix(no noun)! : fix bug with breaking change with incorrect whitespace and scope", isBreaking: true },
     { message: "feat!: add new feature with breaking change", isBreaking: true },
-    { message: "chore: add new feature with breaking change in footer\n\nBREAKING CHANGE: this is a breaking change", isBreaking: true },
-    { message: "chore: add new feature with breaking change in footer\n\nBREAKING-CHANGE: this is a breaking change", isBreaking: true },
-    { message: "chore: add new feature with breaking change in body\n\nBREAKING-CHANGE: this is a breaking change\n\nNew paragraph", isBreaking: false },
+    {
+      message: "chore: add new feature with breaking change in footer\n\nBREAKING CHANGE: this is a breaking change",
+      isBreaking: true,
+    },
+    {
+      message: "chore: add new feature with breaking change in footer\n\nBREAKING-CHANGE: this is a breaking change",
+      isBreaking: true,
+    },
+    {
+      message:
+        "chore: add new feature with breaking change in body\n\nBREAKING-CHANGE: this is a breaking change\n\nNew paragraph",
+      isBreaking: false,
+    },
   ];
 
   it.each(tests)("$message", test => {
@@ -234,8 +244,8 @@ describe("Scope", () => {
   const tests = [
     { message: "feat: no scope", valid: true, scope: undefined },
     { message: "feat(no noun): wrong scope", valid: false, scope: "no noun" },
-    { message: "feat (cli): correct scope, whitespacing", valid: false, scope: "cli"},
-    { message: "feat (cli) : correct scope, whitespacing part deux", valid: false, scope: "cli"}
+    { message: "feat (cli): correct scope, whitespacing", valid: false, scope: "cli" },
+    { message: "feat (cli) : correct scope, whitespacing part deux", valid: false, scope: "cli" },
   ];
 
   it.each(tests)("$message", test => {
@@ -249,13 +259,29 @@ describe("Type", () => {
   const tests = [
     { message: "feat: no scope", valid: true, type: "feat" },
     { message: "feat(no noun): wrong scope", valid: false, type: "feat" },
-    { message: "no noun(cli): wrong type", valid: false, type: "no noun"},
-    { message: "feat : correct scope, whitespacing", valid: false, type: "feat"}
+    { message: "no noun(cli): wrong type", valid: false, type: "no noun" },
+    { message: "feat : correct scope, whitespacing", valid: false, type: "feat" },
   ];
 
   it.each(tests)("$message", test => {
     const commit = ConventionalCommit.fromString({ hash: "01ab2cd3", message: test.message });
     expect(commit.isValid).toBe(test.valid);
     expect(commit.type).toBe(test.type);
+  });
+});
+
+describe("Commit message ends at first comment (#)", () => {
+  const tests = [
+    { message: "feat: no scope\n# This is a comment", breaking: false },
+    { message: "feat: no scope\n# This is a comment\n# which spans multiple lines", breaking: false },
+    { message: "feat: no scope\n# This is a comment\n\nBREAKING-CHANGE: This should not be ignored", breaking: true },
+  ];
+
+  it.each(tests)("$message", test => {
+    const commit = ConventionalCommit.fromString({ hash: "01ab2cd3", message: test.message });
+
+    expect(commit.isValid).toBe(true);
+    expect(commit.type).toBe("feat");
+    expect(commit.breaking).toBe(test.breaking);
   });
 });

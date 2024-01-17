@@ -82,9 +82,16 @@ export class Commit {
     author?: { name: string; date: Date };
     committer?: { name: string; date: Date };
   }): Commit {
+    // Git will trim all comments (lines starting with #), so we do the same
+    // to ensure the commit message is parsed correctly.
+    const trimmedMessage = props.message
+      .split(/\r?\n/)
+      .filter(line => !line.startsWith("#"))
+      .join("\n");
+
     const commit = {
       hash: props.hash,
-      ...parseCommitMessage(props.message),
+      ...parseCommitMessage(trimmedMessage),
       author: props.author,
       committer: props.committer,
       raw: props.message,
