@@ -29,7 +29,30 @@ interface ICommitRequirement {
   validate(commit: IRawConventionalCommit, options?: IConventionalCommitOptions): DiagnosticsMessage[];
 }
 
+/**
+ * Checks whether the provided string is a noun.
+ * A noun is defined as a single word which can be capitalized or contain hyphens, therefore
+ * it will not support multi-word nouns (i.e. New York).
+ *
+ * @param str String to check
+ * @returns True if the string is a noun, false otherwise.
+ *
+ * @internal
+ */
 function isNoun(str: string): boolean {
+  return /^[A-Za-z][a-z]*(-[A-Za-z][a-z]*)*$/.test(str);
+}
+
+/**
+ * Validates whether the provided type valid.
+ * A valid type is defined as a single word, all lowercase, no spaces, and no special characters.
+ *
+ * @param str String to check
+ * @returns True if the string is a valid type, false otherwise.
+ *
+ * @internal
+ */
+function isValidType(str: string): boolean {
   return !str.trim().includes(" ") && !/[^a-z]/i.test(str.trim());
 }
 
@@ -96,9 +119,11 @@ class CC01 implements ICommitRequirement {
     if (!commit.type.value || commit.type.value.trim().length === 0) {
       // Validated with EC-02
     } else {
-      // Ensure that we have a noun
-      if (!isNoun(commit.type.value))
+      // Ensure that we have a valid type (single word, no spaces, no special characters)
+      if (!isValidType(commit.type.value)) {
         errors.push(createDiagnosticsMessage(commit, this.description, "which consists of a noun", "type"));
+      }
+
       // Validate for spacing after the type
       if (commit.type.value.trim() !== commit.type.value) {
         if (commit.scope.value) {
@@ -345,7 +370,7 @@ class EC02 implements ICommitRequirement {
 
     if (
       commit.type.value === undefined ||
-      !isNoun(commit.type.value) ||
+      !isValidType(commit.type.value) ||
       expectedTypes.includes(commit.type.value.toLowerCase().trimEnd())
     ) {
       return [];

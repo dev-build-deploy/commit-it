@@ -243,7 +243,11 @@ describe("Breaking Change", () => {
 describe("Scope", () => {
   const tests = [
     { message: "feat: no scope", valid: true, scope: undefined },
-    { message: "feat(no noun): wrong scope", valid: false, scope: "no noun" },
+    { message: "feat(noun): no scope", valid: true, scope: "noun" },
+    { message: "feat(deps-dev): no scope", valid: true, scope: "deps-dev" },
+    { message: "feat(Apple): no scope", valid: true, scope: "Apple" },
+    { message: "feat(New York): no scope", valid: false, scope: "New York" }, // NOTE: we do NOT support multi-word scopes
+    { message: "feat(no-noun!): wrong scope", valid: false, scope: "no-noun!" },
     { message: "feat (cli): correct scope, whitespacing", valid: false, scope: "cli" },
     { message: "feat (cli) : correct scope, whitespacing part deux", valid: false, scope: "cli" },
   ];
