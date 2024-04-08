@@ -252,10 +252,13 @@ export function parseCommitMessage(message: string): {
   return {
     subject,
     body,
-    footer: getFooterElementsFromParagraph(footer ?? "")?.reduce((acc, cur) => {
-      acc[cur.key] = cur.value;
-      return acc;
-    }, {} as Record<string, string>),
+    footer: getFooterElementsFromParagraph(footer ?? "")?.reduce(
+      (acc, cur) => {
+        acc[cur.key] = cur.value;
+        return acc;
+      },
+      {} as Record<string, string>
+    ),
     attributes: {
       isFixup,
       isMerge,
