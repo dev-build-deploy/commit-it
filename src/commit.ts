@@ -204,7 +204,7 @@ export function getFooterElementsFromParagraph(
 function subjectIsMergePattern(subject: string): boolean {
   const githubMergeRegex = /^Merge pull request #(\d+) from '?(.*)'?$/;
   const bitbucketMergeRegex = /^Merged in '?(.*)'? \(pull request #(\d+)\)$/;
-  const gitlabMergeRegex = /^Merge branch '?(.*?)'? into '?(.*?)'?$/;
+  const gitlabMergeRegex = /^Merge( remote-tracking)? branch '?(.*?)'? into '?(.*?)'?$/;
 
   return githubMergeRegex.test(subject) || bitbucketMergeRegex.test(subject) || gitlabMergeRegex.test(subject);
 }
