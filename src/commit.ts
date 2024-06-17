@@ -202,9 +202,9 @@ export function getFooterElementsFromParagraph(
  * @returns True if the subject is a common merge pattern, false otherwise
  */
 function subjectIsMergePattern(subject: string): boolean {
-  const githubMergeRegex = /^Merge pull request #(\d+) from '?(.*)'?$/;
-  const bitbucketMergeRegex = /^Merged in '?(.*)'? \(pull request #(\d+)\)$/;
-  const gitlabMergeRegex = /^Merge( remote-tracking)? branch '?(.*?)'? into '?(.*?)'?$/;
+  const githubMergeRegex = /^Merge pull request #(\d+) from '?([a-zA-Z0-9_./-]+)'?$/;
+  const bitbucketMergeRegex = /^Merged in '?([a-zA-Z0-9_./-]+)'? \(pull request #(\d+)\)$/;
+  const gitlabMergeRegex = /^Merge( remote-tracking)? branch '?([a-zA-Z0-9_./-]+)'?? into '?([a-zA-Z0-9_./-]+)'?$/;
 
   return githubMergeRegex.test(subject) || bitbucketMergeRegex.test(subject) || gitlabMergeRegex.test(subject);
 }
