@@ -310,6 +310,9 @@ describe("Merge commits", () => {
     { message: "Merge branch 'ci/some-branch' into 'main'" },
     { message: "Merge branch 'ci/some-branch' into main" },
     { message: "Merge branch ci/some-branch into main" },
+    { message: "Merge remote-tracking branch 'ci/some-branch' into 'main'" },
+    { message: "Merge remote-tracking branch 'ci/some-branch' into main" },
+    { message: "Merge remote-tracking branch ci/some-branch into main" },
   ];
 
   it.each(tests)("$message", test => {
