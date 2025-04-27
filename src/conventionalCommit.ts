@@ -71,7 +71,7 @@ export interface IRawConventionalCommit {
  * @member warnings List of warning messages
  */
 export class ConventionalCommit {
-  private _raw: IRawConventionalCommit;
+  private readonly _raw: IRawConventionalCommit;
   private _errors: DiagnosticsMessage[] = [];
   private _warnings: DiagnosticsMessage[] = [];
 

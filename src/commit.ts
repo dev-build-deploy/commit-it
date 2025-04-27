@@ -64,7 +64,7 @@ const TRAILER_REGEX = /^((BREAKING CHANGE:)|([\w-]+(:| #))|([ \t]+)\w*)/i;
  * @member raw The commit message
  */
 export class Commit {
-  private _commit: ICommit;
+  private readonly _commit: ICommit;
 
   private constructor(commit: ICommit) {
     this._commit = commit;
