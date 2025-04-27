@@ -154,7 +154,7 @@ export class ConventionalCommit {
   get scope(): string | undefined {
     // Removes the parenthesis from the scope
     if (this._raw.scope.value !== undefined) {
-      return this._raw.scope.value.trimEnd().replace(/(\(|\))/g, "");
+      return this._raw.scope.value.trimEnd().replace(/[()]/g, "");
     }
     return this._raw.scope.value;
   }
