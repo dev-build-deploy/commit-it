@@ -7,7 +7,6 @@ import { IConventionalCommitOptions } from "../src/conventionalCommit";
 import { Commit, ConventionalCommit } from "../src/index";
 
 const removeColors = (message: string): string => {
-  // eslint-disable-next-line no-control-regex
   return message.replace(/\x1b\[[0-9;]*m/g, "");
 };
 
