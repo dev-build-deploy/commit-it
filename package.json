@@ -45,7 +45,7 @@
   ],
   "dependencies": {
     "@dev-build-deploy/diagnose-it": "^1",
-    "chalk": "^4"
+    "chalk": "^5"
   },
   "engines": {
     "node": ">=20"
