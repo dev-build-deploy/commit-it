@@ -8,11 +8,21 @@ import * as fs from "fs";
 import * as path from "path";
 import * as zlib from "zlib";
 
-import * as ccommit from "./commit";
-import { ICommit, NameAndDateType } from "./commit";
+import * as ccommit from "./commit.js";
+import { ICommit, NameAndDateType } from "./commit.js";
 
 /** @internal */
-export const gitObjectFolder = ".git/objects";
+export let gitObjectFolder = ".git/objects";
+
+/**
+ * Points the object database lookups at another folder (relative to the repository root).
+ * ESM module namespaces are read-only, so tests use this instead of patching `gitObjectFolder`.
+ * @internal
+ * @param folder Path of the git objects folder, relative to the repository root
+ */
+export function setGitObjectFolder(folder: string): void {
+  gitObjectFolder = folder;
+}
 
 /**
  * Converts seconds since epoch and timezone information to a Date object

@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-import * as git from "../src/git";
-import { Commit, ConventionalCommit } from "../src/index";
+import * as git from "../src/git.js";
+import { Commit, ConventionalCommit } from "../src/index.js";
 
 describe("Validate example code in README.md", () => {
   beforeAll(() => {
-    Object.defineProperty(git, "gitObjectFolder", { value: "test/environment/objects" });
+    git.setGitObjectFolder("test/environment/objects");
   });
 
   test("Git Source", () => {

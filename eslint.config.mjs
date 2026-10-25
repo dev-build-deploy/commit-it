@@ -31,13 +31,12 @@ export default [...fixupConfigRules(compat.extends(
     languageOptions: {
         globals: {
             ...globals.node,
-            ...globals.commonjs,
             ...jest.environments.globals.globals,
         },
 
         parser: tsParser,
         ecmaVersion: "latest",
-        sourceType: "commonjs",
+        sourceType: "module",
 
         parserOptions: {
             project: "./tsconfig.json",
@@ -114,10 +113,7 @@ export default [...fixupConfigRules(compat.extends(
             },
         }],
 
-        "import/extensions": ["error", "never", {
-            pattern: {
-                json: "ignorePackages",
-            },
-        }],
+        // nodenext ESM: tsc itself requires the runtime extension on relative imports ("./commit.js", TS2835).
+        "import/extensions": "off",
     },
 }];

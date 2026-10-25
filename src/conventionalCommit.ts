@@ -5,8 +5,8 @@
 
 import { DiagnosticsLevelEnum, DiagnosticsMessage } from "@dev-build-deploy/diagnose-it";
 
-import { Commit } from "./commit";
-import * as requirements from "./requirements";
+import { Commit } from "./commit.js";
+import * as requirements from "./requirements.js";
 
 /**
  * Conventional Commit options
