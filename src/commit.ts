@@ -197,16 +197,35 @@ export function getFooterElementsFromParagraph(
  * - GitHub
  * - BitBucket
  * - GitLab
+ * - Git itself (see fmt-merge-msg), e.g.:
+ *   - `Merge branch 'x'`, `Merge branch 'x' into y`
+ *   - `Merge branches 'a' and 'b'`, `Merge branches 'a', 'b' and 'c'`
+ *   - `Merge remote-tracking branch 'origin/x'`
+ *   - `Merge commit 'abc123'`, `Merge tag 'v1.0'`
+ *   - any of these with ` of <url>` (git pull)
  *
  * @param subject The subject to check
  * @returns True if the subject is a common merge pattern, false otherwise
  */
 function subjectIsMergePattern(subject: string): boolean {
+  const ref = "[a-zA-Z0-9_./@#~^+-]+";
+  const quoted = "'[^'\\s]+'";
   const githubMergeRegex = /^Merge pull request #(\d+) from '?([a-zA-Z0-9_./-]+)'?$/;
   const bitbucketMergeRegex = /^Merged in '?([a-zA-Z0-9_./-]+)'? \(pull request #(\d+)\)$/;
-  const gitlabMergeRegex = /^Merge( remote-tracking)? branch '?([a-zA-Z0-9_./-]+)'?? into '?([a-zA-Z0-9_./-]+)'?$/;
+  // Unquoted names are only accepted with an explicit target: "Merge branch x into y"
+  const unquotedMergeRegex = new RegExp(`^Merge( remote-tracking)? branch '?${ref}'? into '?${ref}'?$`);
+  // Git's own subjects; names are always quoted
+  const gitMergeRegex = new RegExp(
+    `^Merge (?:(?:remote-tracking )?(?:branch|branches)|commits?|tags?) ${quoted}(?:, ${quoted})*(?: and ${quoted})?` +
+      `(?: of \\S+)?(?: into '?${ref}'?)?$`
+  );
 
-  return githubMergeRegex.test(subject) || bitbucketMergeRegex.test(subject) || gitlabMergeRegex.test(subject);
+  return (
+    githubMergeRegex.test(subject) ||
+    bitbucketMergeRegex.test(subject) ||
+    unquotedMergeRegex.test(subject) ||
+    gitMergeRegex.test(subject)
+  );
 }
 
 /**
