@@ -312,6 +312,19 @@ describe("Merge commits", () => {
     { message: "Merge remote-tracking branch 'ci/some-branch' into 'main'" },
     { message: "Merge remote-tracking branch 'ci/some-branch' into main" },
     { message: "Merge remote-tracking branch ci/some-branch into main" },
+    { message: "Merge branch 'ci/some-branch'" },
+    { message: "Merge branch 'ci/some-branch' into main" },
+    { message: "Merge branch 'ci/some-branch' of https://github.com/org/repo" },
+    { message: "Merge branch 'ci/some-branch' of https://github.com/org/repo into main" },
+    { message: "Merge branches 'a' and 'b'" },
+    { message: "Merge branches 'a', 'b' and 'c'" },
+    { message: "Merge branches 'a', 'b' and 'c' into main" },
+    { message: "Merge remote-tracking branch 'origin/ci/some-branch'" },
+    { message: "Merge remote-tracking branch 'origin/main' of git@github.com:org/repo.git" },
+    { message: "Merge commit 'abc123'" },
+    { message: "Merge commit 'abc123' into main" },
+    { message: "Merge tag 'v1.0'" },
+    { message: "Merge tag 'v1.0' of https://github.com/org/repo" },
   ];
 
   it.each(tests)("$message", test => {
@@ -319,5 +332,25 @@ describe("Merge commits", () => {
 
     expect(commit.isValid).toBe(false);
     expect(commit.isMergeCommit).toBe(true);
+  });
+});
+
+describe("Non-merge subjects", () => {
+  const tests = [
+    { message: "Merging things" },
+    { message: "Merge sort speed-up" },
+    { message: "Merge branch" },
+    { message: "Merge branch of cards" },
+    { message: "Merge branch x" },
+    { message: "Merge tag v1.0" },
+    { message: "Merge commit abc123" },
+    { message: "Merge branches a and b" },
+    { message: "Merge pull request" },
+  ];
+
+  it.each(tests)("$message", test => {
+    const commit = ConventionalCommit.fromString({ hash: "01ab2cd3", message: test.message });
+
+    expect(commit.isMergeCommit).toBe(false);
   });
 });
