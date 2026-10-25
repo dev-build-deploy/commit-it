@@ -13,19 +13,29 @@ on:
 
 jobs:
   unit-tests:
-    name: Unit Tests
+    name: Unit Tests (Node ${{ matrix.node }})
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # engines: >=22 (the oldest maintained LTS) up to the active LTS
+        node: [22.x, 24.x]
 
     steps:
       - uses: actions/checkout@v7
 
-      - name: Set up Node.js 16.x
+      - name: Set up Node.js ${{ matrix.node }}
         uses: actions/setup-node@v6
         with:
-          node-version: 16.x
+          node-version: ${{ matrix.node }}
 
       - name: Install dependencies
         run: npm ci
 
+      - name: Lint
+        run: npm run lint
+
       - name: Run tests
         run: npm run test
+
+      - name: Check the published package loads (ESM import and require)
+        run: npm run check:package

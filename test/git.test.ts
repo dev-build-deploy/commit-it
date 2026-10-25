@@ -3,13 +3,13 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { ICommit } from "../src/commit";
-import * as git from "../src/git";
-import { Commit } from "../src/index";
+import { ICommit } from "../src/commit.js";
+import * as git from "../src/git.js";
+import { Commit } from "../src/index.js";
 
 describe("Get Commit Message from git", () => {
   beforeAll(() => {
-    Object.defineProperty(git, "gitObjectFolder", { value: "test/environment/objects" });
+    git.setGitObjectFolder("test/environment/objects");
   });
 
   test("Hash from Local Repository", () => {

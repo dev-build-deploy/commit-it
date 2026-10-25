@@ -2,14 +2,23 @@
   "name": "@dev-build-deploy/commit-it",
   "version": "0.0.0",
   "description": "(Conventional) Commits library",
+  "type": "module",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "tsc --project tsconfig.publish.json",
-    "test": "jest --coverage",
-    "lint": "eslint --ext .ts test/*.ts src/*.ts",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
+    "lint": "eslint test/*.ts src/*.ts",
     "format": "prettier --write src/*.ts test/*.ts && prettier --write src/*.ts test/*.ts",
+    "check:package": "tsc --project tsconfig.publish.json && node --input-type=module -e \"import { Commit, ConventionalCommit } from '@dev-build-deploy/commit-it'; if (!ConventionalCommit.fromCommit(Commit.fromString({ hash: '1', message: 'feat: ok' })).isValid) process.exit(1)\" && node -e \"require('@dev-build-deploy/commit-it')\"",
     "prepare": "node -e \"if(process.env.CI)process.exit(0);const r=require('child_process').spawnSync('pre-commit',['install','--hook-type','pre-commit','--hook-type','commit-msg'],{stdio:'inherit'});if(r.error)console.log('hint: install pre-commit (https://pre-commit.com) to get the git hooks')\""
   },
   "author": "Kevin de Jong",
@@ -27,12 +36,13 @@
   },
   "homepage": "https://github.com/dev-build-deploy/commit-it#readme",
   "devDependencies": {
-    "@tsconfig/node20": "^20",
+    "@eslint/compat": "^1",
+    "@tsconfig/node22": "^22",
     "@types/jest": "^29",
+    "@types/node": "^22",
     "@typescript-eslint/eslint-plugin": "^8",
     "@typescript-eslint/parser": "^8",
     "eslint": "^9",
-    "@eslint/compat": "^1",
     "eslint-import-resolver-typescript": "^4",
     "eslint-plugin-import": "^2",
     "eslint-plugin-jest": "^28",
@@ -46,9 +56,9 @@
   ],
   "dependencies": {
     "@dev-build-deploy/diagnose-it": "^1",
-    "chalk": "^4"
+    "chalk": "^5"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   }
 }

@@ -15,6 +15,13 @@ Lightweight (Conventional) Commits library, allowing you to retrieve (Convention
 * Retrieving commit messages from your git objects or provided string
 * Validate the commit message against the [(Extended) Conventional Commits specification]
 
+## Requirements
+
+* Node.js 22 or later
+* The package is an ES module (`"type": "module"`): use `import`. CommonJS code on Node.js 22.12+ can still
+  `require("@dev-build-deploy/commit-it")` (Node's `require(esm)`), but a TypeScript project compiling to CommonJS
+  should move to `"module": "nodenext"` with `"type": "module"` (Jest needs its ESM mode for this package).
+
 ## Basic Usage
 
 ### Commit Message

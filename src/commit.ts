@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-import * as git from "./git";
+import * as git from "./git.js";
 
 /**
  * String data source options

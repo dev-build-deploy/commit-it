@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: MIT
  */
 
-export { Commit } from "./commit";
-export type { NameAndDateType } from "./commit";
+export { Commit } from "./commit.js";
+export type { NameAndDateType } from "./commit.js";
 
-export { ConventionalCommit } from "./conventionalCommit";
-export type { IConventionalCommitOptions } from "./conventionalCommit";
+export { ConventionalCommit } from "./conventionalCommit.js";
+export type { IConventionalCommitOptions } from "./conventionalCommit.js";

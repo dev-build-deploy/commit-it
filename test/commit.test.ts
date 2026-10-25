@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-import * as commit from "../src/commit";
+import * as commit from "../src/commit.js";
 
 describe("Valid singleline footer elements", () => {
   const tests = [

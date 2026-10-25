@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { Commit } from "../src/index";
+import { Commit } from "../src/index.js";
 
 describe("Parse commit messages", () => {
   test("Author", () => {
